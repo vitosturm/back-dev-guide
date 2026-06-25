@@ -7,7 +7,18 @@ import {
   tsGenericsWorkflow,
   zodBasicsWorkflow,
 } from './phase0'
-import { nodeTsSetupWorkflow, nodeHttpWorkflow, expressIntroWorkflow } from './phase1'
+import {
+  nodeTsSetupWorkflow,
+  nodeHttpWorkflow,
+  expressIntroWorkflow,
+  expressRoutersWorkflow,
+  expressMiddlewaresWorkflow,
+  mongooseModelsWorkflow,
+  mongodbCrudCliWorkflow,
+  blogApiWorkflow,
+  zodDtoWorkflow,
+  fileUploadWorkflow,
+} from './phase1'
 
 export const workflowRegistry: Record<string, WorkflowTree> = {
   'ts-intro': tsIntroWorkflow,
@@ -19,4 +30,11 @@ export const workflowRegistry: Record<string, WorkflowTree> = {
   'node-ts-setup': nodeTsSetupWorkflow,
   'node-http': nodeHttpWorkflow,
   'express-intro': expressIntroWorkflow,
+  'express-routers': expressRoutersWorkflow,
+  'express-middlewares': expressMiddlewaresWorkflow,
+  'mongoose-models': mongooseModelsWorkflow,
+  'mongodb-crud-cli': mongodbCrudCliWorkflow,
+  'blog-api': blogApiWorkflow,
+  'zod-dto': zodDtoWorkflow,
+  'file-upload': fileUploadWorkflow,
 }
