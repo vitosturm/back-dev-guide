@@ -19,7 +19,8 @@ export default function NotesPanel({ userId, topicId }: NotesPanelProps) {
   const { initialContent, saveStatus, save } = useNotes(userId, topicId)
 
   const editor = useCreateBlockNote(
-    { initialContent: initialContent ?? undefined },
+    // BlockNote rejects an empty array — undefined gets its own default empty document instead
+    { initialContent: initialContent && initialContent.length > 0 ? initialContent : undefined },
     // Recreate the editor exactly once — when initialContent transitions from null to loaded data.
     // BlockNote's hook accepts a deps array as its second argument (same pattern as useMemo).
     [initialContent !== null],
