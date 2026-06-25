@@ -38,9 +38,6 @@ export default function PhaseNav() {
                     }
                   >
                     {topic.title}
-                    {topic.hasLab && (
-                      <span className="ml-auto text-xs text-neutral-400">lab</span>
-                    )}
                   </NavLink>
                 </li>
               ))}
