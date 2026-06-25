@@ -17,18 +17,25 @@ export type WorkflowIconKey =
   | 'folder-routes'
   | 'folder-controller'
 
+export interface KeyLine {
+  line: number
+  note: string
+}
+
 export interface WorkflowNode {
   id: string
   kind: WorkflowNodeKind
   /** Displayed path, e.g. 'src/utils/index.ts' or 'src/utils/' for a folder row */
   filePath: string
   icon: WorkflowIconKey
-  /** Short tag shown on the node itself, e.g. 'GET /posts' — optional, any kind */
+  /** Short tag shown on the node itself — optional, any kind */
   roleLabel?: string
   /** Only present when kind === 'file' */
   language?: 'typescript' | 'javascript' | 'json'
   code?: string
   explanation?: string
+  keyLines?: KeyLine[]
+  warning?: string
   /** Branches — rendered as siblings under this node */
   children?: WorkflowNode[]
 }
