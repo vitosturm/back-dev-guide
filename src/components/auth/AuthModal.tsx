@@ -37,7 +37,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     }
   }
 
-  async function handleOAuth(provider: 'github') {
+  async function handleOAuth(provider: 'github' | 'google') {
     setError(null)
     try {
       await pb.collection('users').authWithOAuth2({ provider })
@@ -75,6 +75,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             className="flex flex-1 items-center justify-center rounded-lg border border-neutral-200 py-2 text-sm font-medium hover:bg-neutral-50"
           >
             GitHub
+          </button>
+          <button
+            onClick={() => handleOAuth('google')}
+            className="flex flex-1 items-center justify-center rounded-lg border border-neutral-200 py-2 text-sm font-medium hover:bg-neutral-50"
+          >
+            Google
           </button>
         </div>
 
