@@ -7,6 +7,15 @@ export type WorkflowIconKey =
   | 'folder-base'
   | 'folder-src'
   | 'folder-utils'
+  | 'nodejs'
+  | 'folder-base-open'
+  | 'folder-database'
+  | 'console'
+  | 'folder-images'
+  | 'folder-config'
+  | 'folder-middleware'
+  | 'folder-routes'
+  | 'folder-controller'
 
 export interface WorkflowNode {
   id: string
