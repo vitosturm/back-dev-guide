@@ -9,6 +9,7 @@ const coopCoepHeaders = {
 }
 
 export default defineConfig({
+  base: '/back-dev-guide/',
   plugins: [react(), tailwindcss()],
   build: {
     outDir: 'dist',

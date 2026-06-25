@@ -5,7 +5,7 @@ import LabPage from '@/pages/LabPage'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/back-dev-guide">
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Navigate to="/topic/ts-intro" replace />} />
