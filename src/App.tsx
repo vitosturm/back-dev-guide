@@ -8,7 +8,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/topic/ts-types" replace />} />
+          <Route index element={<Navigate to="/topic/ts-intro" replace />} />
           <Route path="topic/:topicId" element={<TopicPage />} />
           <Route path="lab/:topicId" element={<LabPage />} />
         </Route>

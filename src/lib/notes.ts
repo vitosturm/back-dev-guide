@@ -1,19 +1,27 @@
 import type { Block } from '@blocknote/core'
-import { supabase } from './supabase'
+import { ClientResponseError } from 'pocketbase'
+import { pb } from './pocketbase'
+
+interface NoteRecord {
+  id: string
+  content_json: Block[]
+}
 
 export async function getNote(
   userId: string,
   topicId: string,
 ): Promise<Block[] | null> {
-  const { data, error } = await supabase
-    .from('notes')
-    .select('content_json')
-    .eq('user_id', userId)
-    .eq('topic_id', topicId)
-    .maybeSingle()
-
-  if (error || !data) return null
-  return data.content_json as Block[]
+  try {
+    const record = await pb
+      .collection('notes')
+      .getFirstListItem<NoteRecord>(
+        pb.filter('user = {:userId} && topic_id = {:topicId}', { userId, topicId }),
+      )
+    return record.content_json
+  } catch (error) {
+    if (error instanceof ClientResponseError && error.status === 404) return null
+    throw error
+  }
 }
 
 export async function upsertNote(
@@ -21,14 +29,19 @@ export async function upsertNote(
   topicId: string,
   content: Block[],
 ): Promise<void> {
-  const { error } = await supabase.from('notes').upsert(
-    {
-      user_id: userId,
+  try {
+    const existing = await pb
+      .collection('notes')
+      .getFirstListItem<NoteRecord>(
+        pb.filter('user = {:userId} && topic_id = {:topicId}', { userId, topicId }),
+      )
+    await pb.collection('notes').update(existing.id, { content_json: content })
+  } catch (error) {
+    if (!(error instanceof ClientResponseError) || error.status !== 404) throw error
+    await pb.collection('notes').create({
+      user: userId,
       topic_id: topicId,
       content_json: content,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'user_id,topic_id' },
-  )
-  if (error) throw error
+    })
+  }
 }

@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import type { User } from '@supabase/supabase-js'
+import type { RecordModel } from 'pocketbase'
 import { LogOut, User as UserIcon } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { pb } from '@/lib/pocketbase'
 
 interface UserMenuProps {
-  user: User
+  user: RecordModel
 }
 
 export default function UserMenu({ user }: UserMenuProps) {
@@ -19,8 +19,8 @@ export default function UserMenu({ user }: UserMenuProps) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  async function signOut() {
-    await supabase.auth.signOut()
+  function signOut() {
+    pb.authStore.clear()
     setOpen(false)
   }
 

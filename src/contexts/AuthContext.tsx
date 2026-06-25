@@ -1,32 +1,24 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import type { RecordModel } from 'pocketbase'
+import { pb } from '@/lib/pocketbase'
 
 interface AuthContextValue {
-  user: User | null
+  user: RecordModel | null
   loading: boolean
 }
 
-const AuthContext = createContext<AuthContextValue>({ user: null, loading: true })
+const AuthContext = createContext<AuthContextValue>({ user: null, loading: false })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<RecordModel | null>(pb.authStore.record)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
+    return pb.authStore.onChange((_token, record) => {
+      setUser(record)
     })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
   }, [])
 
-  return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, loading: false }}>{children}</AuthContext.Provider>
 }
 
 export const useAuthContext = () => useContext(AuthContext)
