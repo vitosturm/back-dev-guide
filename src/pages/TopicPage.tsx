@@ -75,7 +75,7 @@ export default function TopicPage() {
         </div>
       )}
 
-      <div className="mx-auto max-w-3xl px-8">
+      <div className={showTree ? 'px-8' : 'mx-auto max-w-3xl px-8'}>
         {topic.sourceUrl && (
           <a
             href={topic.sourceUrl}
