@@ -4,20 +4,27 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
 import type { WebContainer, FileSystemTree } from '@webcontainer/api'
-import { acquireWebContainer, isWebContainerSupported, mountAndRun } from './useWebContainer'
+import { acquireWebContainer, isWebContainerSupported } from './useWebContainer'
 import LabFallback from './LabFallback'
 
 interface LabRunnerProps {
   starterFiles: FileSystemTree
-  entryFile: string  // path within the WebContainer FS to load in Monaco, e.g. 'src/index.ts'
+  entryFile: string       // path within WebContainer FS to open in Monaco
+  runScript?: string      // package.json script name to run after install (default: 'dev')
 }
 
-export default function LabRunner({ starterFiles, entryFile }: LabRunnerProps) {
+export default function LabRunner({
+  starterFiles,
+  entryFile,
+  runScript = 'dev',
+}: LabRunnerProps) {
   const termRef = useRef<HTMLDivElement>(null)
   const wcRef = useRef<WebContainer | null>(null)
-  // Capture initial props in refs so the boot effect doesn't re-run on prop changes
+
+  // Capture initial props in refs so the boot effect only runs once per mount
   const starterFilesRef = useRef(starterFiles)
   const entryFileRef = useRef(entryFile)
+  const runScriptRef = useRef(runScript)
 
   const [supported] = useState(isWebContainerSupported)
   const [booting, setBooting] = useState(true)
@@ -41,12 +48,36 @@ export default function LabRunner({ starterFiles, entryFile }: LabRunnerProps) {
       const wc = await acquireWebContainer()
       if (cancelled || !wc) return
       wcRef.current = wc
-      await mountAndRun(wc, starterFilesRef.current, 'node', ['--version'], term)
-      const initial = await wc.fs.readFile(entryFileRef.current, 'utf-8').catch(() => '')
-      if (!cancelled) {
-        setCode(initial)
-        setBooting(false)
-      }
+
+      // Mount starter files
+      await wc.mount(starterFilesRef.current)
+
+      // Install dependencies
+      term.writeln('\x1b[36m📦 Installing dependencies...\x1b[0m')
+      const install = await wc.spawn('npm', ['install'])
+      install.output.pipeTo(
+        new WritableStream({ write: (data) => term.write(data) }),
+      )
+      await install.exit
+
+      // Read entry file for Monaco
+      const initial = await wc.fs
+        .readFile(entryFileRef.current, 'utf-8')
+        .catch(() => '')
+      if (cancelled) return
+      setCode(initial)
+      setBooting(false)
+
+      // Run the dev script
+      term.writeln('\x1b[32m▶ Running npm run ' + runScriptRef.current + '...\x1b[0m')
+      const proc = await wc.spawn('npm', ['run', runScriptRef.current])
+      proc.output.pipeTo(
+        new WritableStream({ write: (data) => term.write(data) }),
+      )
+
+      // Make terminal interactive — pipe xterm input to the process
+      const writer = proc.input.getWriter()
+      term.onData((data) => { void writer.write(data) })
     }
 
     boot()
@@ -55,8 +86,8 @@ export default function LabRunner({ starterFiles, entryFile }: LabRunnerProps) {
       cancelled = true
       term.dispose()
     }
-    // Empty deps: intentional — this effect boots the WebContainer once per mount.
-    // starterFilesRef and entryFileRef are stable refs, not reactive values.
+    // Empty deps: intentional — boots once per mount.
+    // starterFilesRef, entryFileRef, runScriptRef are stable refs, not reactive values.
   }, [supported])
 
   if (!supported) {
