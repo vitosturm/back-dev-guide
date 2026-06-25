@@ -1,0 +1,16 @@
+[Unit]
+Description=PocketBase
+After=network.target
+
+[Service]
+Type=simple
+User=jaywee92
+Group=jaywee92
+LimitNOFILE=4096
+WorkingDirectory=/home/jaywee92/pocketbase
+ExecStart=/home/jaywee92/pocketbase/pocketbase serve --http=127.0.0.1:8090
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
