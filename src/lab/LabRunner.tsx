@@ -20,6 +20,7 @@ export default function LabRunner({
 }: LabRunnerProps) {
   const termRef = useRef<HTMLDivElement>(null)
   const wcRef = useRef<WebContainer | null>(null)
+  const procRef = useRef<Awaited<ReturnType<WebContainer['spawn']>> | null>(null)
 
   // Capture initial props in refs so the boot effect only runs once per mount
   const starterFilesRef = useRef(starterFiles)
@@ -71,6 +72,7 @@ export default function LabRunner({
       // Run the dev script
       term.writeln('\x1b[32m▶ Running npm run ' + runScriptRef.current + '...\x1b[0m')
       const proc = await wc.spawn('npm', ['run', runScriptRef.current])
+      procRef.current = proc
       proc.output.pipeTo(
         new WritableStream({ write: (data) => term.write(data) }),
       )
@@ -84,9 +86,10 @@ export default function LabRunner({
 
     return () => {
       cancelled = true
+      procRef.current?.kill()
       term.dispose()
     }
-    // Empty deps: intentional — boots once per mount.
+    // supported never changes (frozen useState) — effect runs once per mount.
     // starterFilesRef, entryFileRef, runScriptRef are stable refs, not reactive values.
   }, [supported])
 
