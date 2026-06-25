@@ -52,11 +52,7 @@ export default function TopicPage() {
       )}
 
       {user && (
-        <div className="mt-10">
-          {/* key=topic.id forces NotesPanel to remount on topic change,
-              reinitialising the BlockNote editor with fresh content */}
-          <NotesPanel key={topic.id} userId={user.id} topicId={topic.id} />
-        </div>
+        <NotesPanel key={topic.id} userId={user.id} topicId={topic.id} />
       )}
     </div>
   )

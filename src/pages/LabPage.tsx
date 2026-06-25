@@ -16,13 +16,9 @@ const defaultStarterFiles: FileSystemTree = {
       ),
     },
   },
-  'src': {
-    directory: {
-      'index.ts': {
-        file: {
-          contents: `// Write your TypeScript here\nconst greeting: string = 'Hello, back-dev-guide!';\nconsole.log(greeting);\n`,
-        },
-      },
+  'index.ts': {
+    file: {
+      contents: `// Write your TypeScript here\nconst greeting: string = 'Hello, back-dev-guide!';\nconsole.log(greeting);\n`,
     },
   },
 }
@@ -41,7 +37,7 @@ export default function LabPage() {
         <span className="text-sm font-medium text-neutral-900">{topic.title} — Lab</span>
       </div>
       <div className="flex-1 overflow-hidden">
-        <LabRunner starterFiles={defaultStarterFiles} entryFile="src/index.ts" />
+        <LabRunner starterFiles={defaultStarterFiles} entryFile="index.ts" />
       </div>
     </div>
   )

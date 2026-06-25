@@ -21,7 +21,7 @@ export async function upsertNote(
   topicId: string,
   content: Block[],
 ): Promise<void> {
-  await supabase.from('notes').upsert(
+  const { error } = await supabase.from('notes').upsert(
     {
       user_id: userId,
       topic_id: topicId,
@@ -30,4 +30,5 @@ export async function upsertNote(
     },
     { onConflict: 'user_id,topic_id' },
   )
+  if (error) throw error
 }
