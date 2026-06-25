@@ -3,11 +3,14 @@ import { useParams, Link } from 'react-router-dom'
 import type { ComponentType } from 'react'
 import { topics } from '@/data/topics'
 import registry from '@/topics/registry'
+import NotesPanel from '@/components/notes/NotesPanel'
+import { useAuthContext } from '@/contexts/AuthContext'
 
 export default function TopicPage() {
   const { topicId } = useParams<{ topicId: string }>()
   const topic = topics.find((t) => t.id === topicId)
   const [VizComponent, setVizComponent] = useState<ComponentType | null>(null)
+  const { user } = useAuthContext()
 
   const vizKey = topic?.viz
   // Render-phase reset: clear cached Viz when the topic (and thus vizKey) changes.
@@ -48,7 +51,13 @@ export default function TopicPage() {
         </Link>
       )}
 
-      {/* NotesPanel added in Task 7 */}
+      {user && (
+        <div className="mt-10">
+          {/* key=topic.id forces NotesPanel to remount on topic change,
+              reinitialising the BlockNote editor with fresh content */}
+          <NotesPanel key={topic.id} userId={user.id} topicId={topic.id} />
+        </div>
+      )}
     </div>
   )
 }
