@@ -7,7 +7,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 export function useNotes(userId: string, topicId: string) {
   const [initialContent, setInitialContent] = useState<Block[] | null>(null)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => {
     let cancelled = false
