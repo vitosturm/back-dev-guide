@@ -42,6 +42,17 @@ export default function TopicPage() {
         </Suspense>
       )}
 
+      {!topic.hasLab && topic.sourceUrl && (
+        <a
+          href={topic.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+        >
+          View source code on GitHub →
+        </a>
+      )}
+
       {topic.hasLab && (
         <Link
           to={`/lab/${topic.id}`}
