@@ -1,4 +1,9 @@
 import type { WorkflowTree } from './types'
+import { code as nosqlIntroDocumentCode } from './code/phase1/nosql-intro--document'
+import { code as mongodbShellInsertCode } from './code/phase1/mongodb-shell--insert'
+import { code as mongodbShellCrudCode } from './code/phase1/mongodb-shell--crud'
+import { code as restPrinciplesRoutesCode } from './code/phase1/rest-principles--routes'
+import { code as restPrinciplesResponseCode } from './code/phase1/rest-principles--response'
 import { code as nodeTsSetupAppCode } from './code/phase1/node-ts-setup--app'
 import { code as nodeTsSetupUtilsCode } from './code/phase1/node-ts-setup--utils-index'
 import { code as nodeHttpServerCode } from './code/phase1/node-http--server'
@@ -465,6 +470,97 @@ export const fileUploadWorkflow: WorkflowTree = [
           { line: 13, note: "req.file.path — despite the name, this is the Cloudinary CDN URL, not a local filesystem path. multer-storage-cloudinary sets it after the upload." },
         ],
         code: fileUploadAppCode,
+      },
+    ],
+  },
+]
+
+export const nosqlIntroWorkflow: WorkflowTree = [
+  {
+    id: 'document',
+    kind: 'file',
+    filePath: 'example.json',
+    icon: 'database',
+    language: 'json',
+    explanation:
+      'A MongoDB document is a JSON-like object — no fixed schema, no table definition needed upfront. Tags live as an array inside the document; the author is an embedded sub-document. Both patterns avoid the JOIN operations that relational databases require.',
+    keyLines: [
+      { line: 4, note: '"_id" is automatically assigned by MongoDB (a 12-byte BSON ObjectId). It is the primary key — no separate auto-increment column needed.' },
+      { line: 6, note: '"tags" is a native array in the document. No junction table, no JOIN — MongoDB can query this directly with db.posts.find({ tags: "nosql" }).' },
+      { line: 7, note: 'Embedded sub-document — the author object is stored inside the post. Fast reads (one document fetch) but harder to update the author\'s info across many posts.' },
+    ],
+    code: nosqlIntroDocumentCode,
+  },
+]
+
+export const mongodbShellWorkflow: WorkflowTree = [
+  {
+    id: 'insert',
+    kind: 'file',
+    filePath: 'mongosh — insert',
+    icon: 'console',
+    language: 'javascript',
+    explanation:
+      'The MongoDB shell (mongosh) uses the same JavaScript-like syntax as the Node SDK. insertOne() adds a single document and returns an insertedId. insertMany() is atomic per-document but not across the batch — a failure mid-batch leaves earlier documents inserted.',
+    keyLines: [
+      { line: 3, note: 'use(\'mydb\') — switches the active database. MongoDB creates it automatically on first write; no CREATE DATABASE command.' },
+      { line: 6, note: 'insertOne() returns { acknowledged: true, insertedId: ObjectId(...) }. MongoDB generates the _id — you can also provide your own.' },
+      { line: 10, note: 'created_at: new Date() — store dates as BSON Date objects, not strings. This enables date-range queries with $gte/$lte.' },
+    ],
+    code: mongodbShellInsertCode,
+    children: [
+      {
+        id: 'crud',
+        kind: 'file',
+        filePath: 'mongosh — query & update',
+        icon: 'console',
+        language: 'javascript',
+        explanation:
+          'Query operators like $gte, $lte, $addToSet are prefixed with $ to distinguish them from field names. $set merges — it only touches the listed fields and leaves the rest unchanged. $addToSet is like $push but ignores duplicates.',
+        keyLines: [
+          { line: 2, note: 'find({ tags: "clothing" }) — MongoDB searches inside arrays automatically. No need for array-specific syntax; the filter works the same as on scalar fields.' },
+          { line: 3, note: '{ $gte: 10, $lte: 40 } — comparison operators. $gt (strictly greater), $gte (greater-or-equal), $lt/$lte for less-than. Chain them in one object for range queries.' },
+          { line: 7, note: '$set merges into the document — only the listed fields change. Without $set you would replace the entire document with just { stock: 45 }.' },
+          { line: 11, note: '$addToSet appends the value only if it\'s not already in the array. Use $push to allow duplicates.' },
+          { line: 15, note: 'deleteMany({ stock: { $lte: 0 } }) — bulk delete with a filter. Without a filter it deletes all documents in the collection.' },
+        ],
+        code: mongodbShellCrudCode,
+      },
+    ],
+  },
+]
+
+export const restPrinciplesWorkflow: WorkflowTree = [
+  {
+    id: 'routes',
+    kind: 'file',
+    filePath: 'rest-routes.ts',
+    icon: 'typescript',
+    language: 'typescript',
+    explanation:
+      'REST maps HTTP methods to CRUD actions on a named resource. The URL identifies the resource (/users, /users/:id); the HTTP method says what to do with it. This convention lets clients predict routes without reading docs.',
+    keyLines: [
+      { line: 3, note: 'GET /users — safe and idempotent, calling it multiple times has no side-effects. Returns the collection.' },
+      { line: 4, note: 'POST /users — creates a new resource. Returns 201 Created with the new resource in the body and ideally a Location header pointing to it.' },
+      { line: 6, note: 'PUT replaces the entire resource body; PATCH sends only the changed fields. Most APIs only implement one of the two.' },
+      { line: 14, note: '201 Created for POST, 204 No Content for DELETE (nothing left to return), 404 for missing resources — consistent status codes let clients handle errors without parsing the body.' },
+    ],
+    code: restPrinciplesRoutesCode,
+    children: [
+      {
+        id: 'response',
+        kind: 'file',
+        filePath: 'response.json',
+        icon: 'database',
+        language: 'json',
+        explanation:
+          'A self-descriptive REST response includes hypermedia links (HATEOAS) so the client can discover related actions without hardcoding URLs. Statelessness means every request carries its own auth token — the server holds no session between calls.',
+        keyLines: [
+          { line: 9, note: '"links" is HATEOAS — Hypermedia As The Engine Of Application State. The client follows links rather than constructing URLs from memory.' },
+          { line: 10, note: '"rel": "self" points back to the current resource. Useful for caching and for clients that receive embedded resources inside a collection response.' },
+          { line: 17, note: 'Stateless: Authorization: Bearer <token> is re-sent with every request. The server authenticates from the token alone — no server-side session storage needed.' },
+        ],
+        code: restPrinciplesResponseCode,
       },
     ],
   },

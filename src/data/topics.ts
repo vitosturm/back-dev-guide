@@ -84,6 +84,22 @@ export const topics: Topic[] = [
     icon: 'nodejs',
   },
   {
+    id: 'nosql-intro',
+    phase: 1,
+    title: 'NoSQL Databases',
+    description: 'Document stores vs relational tables, flexible schemas, horizontal scaling, when to choose NoSQL over SQL',
+    sourceUrl: 'https://github.com/SE-6/Backend/tree/main/19-MongoDB',
+    icon: 'database',
+  },
+  {
+    id: 'mongodb-shell',
+    phase: 1,
+    title: 'MongoDB Shell CRUD',
+    description: 'insertOne/insertMany, find with $gte/$lte/$addToSet operators, updateOne/updateMany with $set, deleteOne/deleteMany',
+    sourceUrl: 'https://github.com/SE-6/Backend/tree/main/19-MongoDB/02_Mongoose',
+    icon: 'console',
+  },
+  {
     id: 'mongoose-models',
     phase: 1,
     title: 'Mongoose & MongoDB',
@@ -100,6 +116,14 @@ export const topics: Topic[] = [
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/19-MongoDB/03_Crud_CLI',
     videoClip: { file: 'mongodb-crud-cli.mp4', start: 0 },
     icon: 'console',
+  },
+  {
+    id: 'rest-principles',
+    phase: 1,
+    title: 'REST API Principles',
+    description: '6 REST constraints, HTTP method → CRUD mapping, resource URIs, status codes, HATEOAS, stateless requests',
+    sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs',
+    icon: 'nodejs',
   },
   {
     id: 'node-http',
