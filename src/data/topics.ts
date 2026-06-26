@@ -77,6 +77,7 @@ export const topics: Topic[] = [
     title: 'TypeScript in Node.js',
     description: 'Running TypeScript natively in Node.js, #import path aliases via package.json imports field, generic utility functions',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/19-MongoDB/01_Running_TS_in_NodeJS',
+    videoClip: { file: '2026-06-16-mongodb.mp4', start: 2284 },
   },
   {
     id: 'mongoose-models',
@@ -84,6 +85,7 @@ export const topics: Topic[] = [
     title: 'Mongoose & MongoDB',
     description: 'Schema definitions, model creation with model(), document relationships, populate() for joined queries',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/19-MongoDB/02_Mongoose',
+    videoClip: { file: '2026-06-17-mongoose.mp4', start: 0 },
   },
   {
     id: 'mongodb-crud-cli',
@@ -91,6 +93,7 @@ export const topics: Topic[] = [
     title: 'MongoDB CRUD CLI',
     description: 'Commander.js CLI with add, list, update, delete, clearDB commands against a MongoDB collection',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/19-MongoDB/03_Crud_CLI',
+    videoClip: { file: '2026-06-16-mongodb.mp4', start: 1803 },
   },
   {
     id: 'node-http',
@@ -98,6 +101,7 @@ export const topics: Topic[] = [
     title: 'Node HTTP Server',
     description: 'Raw http.createServer, routing by method and URL, writeHead with JSON content-type, status codes',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/01_Node_HTTP',
+    videoClip: { file: '2026-06-18-express-intro.mp4', start: 0 },
   },
   {
     id: 'express-intro',
@@ -105,6 +109,7 @@ export const topics: Topic[] = [
     title: 'Express Basics',
     description: 'Express app setup, app.get/all with route handlers, req.params, res.json, res.status chain',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/03_Express_Intro',
+    videoClip: { file: '2026-06-18-express-intro.mp4', start: 0 },
   },
   {
     id: 'express-routers',
@@ -112,6 +117,7 @@ export const topics: Topic[] = [
     title: 'Express Routers',
     description: 'Router() modules, controller pattern, app.use() mounting, express.json() middleware',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/04_Express_Routers',
+    videoClip: { file: '2026-06-19-express-routers.mp4', start: 273 },
   },
   {
     id: 'blog-api',
@@ -119,6 +125,7 @@ export const topics: Topic[] = [
     title: 'Blog REST API',
     description: 'Full REST API — users + posts CRUD, MongoDB relationships via Mongoose populate()',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/05_BlogAPI',
+    videoClip: { file: '2026-06-19-express-routers.mp4', start: 3485 },
   },
   {
     id: 'express-middlewares',
@@ -126,6 +133,7 @@ export const topics: Topic[] = [
     title: 'Express Middlewares',
     description: 'Custom middleware chain: timeLogger, methodLogger, maintenanceMode, payWall, global errorHandler',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/06_Express_Middlewares',
+    videoClip: { file: '2026-06-22-middlewares.mp4', start: 0 },
   },
   {
     id: 'zod-dto',
@@ -133,6 +141,7 @@ export const topics: Topic[] = [
     title: 'Zod DTOs & Validation',
     description: 'Zod schemas as Data Transfer Objects, validateBodyZod middleware, userSchema and postSchema with zod/v4',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/07_ZOD_DTO',
+    videoClip: { file: '2026-06-23-zod.mp4', start: 0 },
   },
   {
     id: 'file-upload',
@@ -140,5 +149,6 @@ export const topics: Topic[] = [
     title: 'File Uploads',
     description: 'Multer middleware with Cloudinary storage, CloudinaryStorage config, multipart/form-data endpoint',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/08_File_Upload',
+    videoClip: { file: '2026-06-24-file-upload.mp4', start: 0 },
   },
 ]
