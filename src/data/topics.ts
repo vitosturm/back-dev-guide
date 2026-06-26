@@ -5,6 +5,24 @@ export interface Topic {
   description: string
   viz?: string         // key in src/topics/registry.ts; undefined = text-only page
   sourceUrl?: string   // SE-6 GitHub tree URL for reference-only topics (and optionally runnable ones)
+  videoClip?: VideoClip
+  youtubeClip?: YouTubeClip
+}
+
+export interface VideoClip {
+  /** Filename in /back-dev-guide/videos/ — e.g. "2026-06-18-express-intro.mp4" */
+  file: string
+  /** Start offset in seconds */
+  start: number
+  /** End offset in seconds — omit to play to end of file */
+  end?: number
+}
+
+export interface YouTubeClip {
+  /** YouTube video ID */
+  id: string
+  /** Start offset in seconds */
+  start: number
 }
 
 export const topics: Topic[] = [
