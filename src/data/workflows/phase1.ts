@@ -183,7 +183,7 @@ export const expressMiddlewaresWorkflow: WorkflowTree = [
     icon: 'typescript',
     language: 'typescript',
     explanation:
-      "Middleware runs in the order it's registered with app.use(). Each function receives (req, res, next) — calling next() passes control to the next middleware in the chain. Error-handling middleware has four parameters (err, req, res, next); Express identifies it by arity and only invokes it when a previous middleware calls next(err).",
+      "Middleware is a pipeline — like airport security: check-in (timeLogger) logs you in, passport control (auth) verifies credentials, the gate (validateBody) checks your boarding pass, and the global error handler is the last checkpoint that catches anything that went wrong upstream. Each middleware calls next() to hand control to the next stage; if it doesn't, the request stalls forever. Error middleware has four parameters (err, req, res, next) — Express identifies it by arity and only routes errors to it.",
     keyLines: [
       { line: 10, note: 'app.use(timeLogger) registers middleware globally — it runs before every route handler below it. Order matters: put it before routes, not after.' },
       { line: 17, note: 'next(new Error(...)) passes an error to the chain. Express skips all normal middleware and routes and jumps directly to the 4-parameter error handler.' },
@@ -613,7 +613,7 @@ export const blogRecapWorkflow: WorkflowTree = [
         icon: 'typescript',
         language: 'typescript',
         explanation:
-          "BlogPost stores author as a plain String — no ObjectId reference — because this API doesn't need a separate User collection. The optional image_url and image_public_id fields are set by the upload middleware when a file is included; omitted otherwise.",
+          "BlogPost stores author as a plain String — no ObjectId reference — because this API doesn't need a separate User collection. The optional image_url and image_public_id fields are the NoSQL advantage in action: you can add new fields without touching existing documents or running a migration. In a relational DB you'd have to ALTER TABLE; in MongoDB you just add the field to the schema.",
         keyLines: [
           { line: 7, note: 'author: String (not ObjectId) — simple scalar field. No populate() needed. Trade-off: author data duplicated across posts, but no JOIN required to read a post.' },
           { line: 8, note: "image_url stores the Cloudinary CDN URL. req.file.path from multer-storage-cloudinary is the CDN URL, not a local filesystem path — naming is misleading but intentional." },
@@ -677,11 +677,11 @@ export const blogRecapWorkflow: WorkflowTree = [
             icon: 'typescript',
             language: 'typescript',
             explanation:
-              "CloudinaryStorage connects Multer to Cloudinary: instead of saving files to disk, Multer pipes the upload directly to Cloudinary's API. The folder param organises uploads inside Cloudinary. After upload.single() runs, req.file.path is the public CDN URL and req.file.filename is the public_id for deletions.",
+              "Multer is to files what express.json() is to JSON bodies — it parses the request and puts the result on req (req.file instead of req.body). multer-storage-cloudinary is the bridge: instead of saving to disk, Multer sends the file directly to Cloudinary and gets back a URL and public_id. That URL is then saved to the DB — the DB never stores the raw file, only the link.",
             keyLines: [
-              { line: 5, note: 'cloudinary.config() reads from environment variables. Never hardcode cloud_name, api_key, or api_secret — they give full write/delete access to your media library.' },
-              { line: 11, note: 'new CloudinaryStorage() — a Multer storage adapter. Files never touch the local filesystem; they stream directly from the client to Cloudinary.' },
-              { line: 13, note: "folder: 'recap_posts' — all uploaded files go to this named folder in Cloudinary. Useful for organising assets and applying bulk transformations later." },
+              { line: 5, note: 'cloudinary.config() reads credentials from env vars. Find cloud_name, api_key, and api_secret on your Cloudinary dashboard under API Keys.' },
+              { line: 11, note: 'new CloudinaryStorage() — Multer storage adapter that streams files to Cloudinary instead of the local filesystem. No temp files created on the server.' },
+              { line: 13, note: "folder: 'recap_posts' organises uploads in Cloudinary. All files from this app land in that folder — useful for bulk cleanup or transformations later." },
             ],
             code: blogRecapUploadCode,
           },
