@@ -3,10 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { WorkflowNode } from '@/data/workflows/types'
 import { getHighlighter, normalizeLanguage, SUPPORTED_LANGS } from '@/lib/shiki'
 
-/**
- * Extracts per-line inner HTML from Shiki's codeToHtml output.
- * Shiki wraps each line in <span class="line">...</span> — one per newline.
- */
 function extractShikiLines(html: string): string[] {
   const codeContent = html.match(/<code>([\s\S]*?)<\/code>/)?.[1] ?? ''
   return codeContent
@@ -19,11 +15,11 @@ function extractShikiLines(html: string): string[] {
 
 interface CodePanelProps {
   node: WorkflowNode | null
-  hoveredLine: number | null
-  onLineHover: (line: number | null) => void
+  activeLineNum: number | null
+  onLineClick: (lineNum: number) => void
 }
 
-export default function CodePanel({ node, hoveredLine, onLineHover }: CodePanelProps) {
+export default function CodePanel({ node, activeLineNum, onLineClick }: CodePanelProps) {
   const [lines, setLines] = useState<string[]>([])
 
   const code = node?.code ?? ''
@@ -33,8 +29,6 @@ export default function CodePanel({ node, hoveredLine, onLineHover }: CodePanelP
 
   useEffect(() => {
     let cancelled = false
-    // Microtask defers setState out of the synchronous effect body
-    // (required by react-hooks/set-state-in-effect in this repo's ESLint config)
     Promise.resolve().then(async () => {
       if (!node?.code || !lang) {
         setLines([])
@@ -48,7 +42,6 @@ export default function CodePanel({ node, hoveredLine, onLineHover }: CodePanelP
     return () => {
       cancelled = true
     }
-  // Re-run when the code string or language changes (new file selected or new topic).
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, lang])
 
@@ -98,17 +91,18 @@ export default function CodePanel({ node, hoveredLine, onLineHover }: CodePanelP
               {lines.map((lineHtml, i) => {
                 const lineNum = i + 1
                 const isKeyLine = keyLineNums.has(lineNum)
-                const isActive = hoveredLine === lineNum
-                const hasDim = hoveredLine !== null && hoveredLine !== lineNum
+                const isActive = activeLineNum === lineNum
+                const hasDim = activeLineNum !== null && !isActive
 
                 return (
                   <div
                     key={i}
-                    onMouseEnter={isKeyLine ? () => onLineHover(lineNum) : undefined}
-                    onMouseLeave={isKeyLine ? () => onLineHover(null) : undefined}
-                    className={`flex transition-opacity duration-100 ${
+                    onClick={isKeyLine ? () => onLineClick(lineNum) : undefined}
+                    className={`flex transition-opacity duration-150 ${
                       hasDim ? 'opacity-20' : 'opacity-100'
-                    } ${isActive ? 'rounded bg-indigo-950/50' : ''}`}
+                    } ${isActive ? 'rounded bg-indigo-950/50' : ''} ${
+                      isKeyLine ? 'cursor-pointer hover:bg-indigo-950/20' : ''
+                    }`}
                   >
                     <span className="w-10 shrink-0 select-none pr-4 text-right leading-6 text-neutral-600">
                       {lineNum}
@@ -118,6 +112,11 @@ export default function CodePanel({ node, hoveredLine, onLineHover }: CodePanelP
                       className="flex-1 leading-6"
                       dangerouslySetInnerHTML={{ __html: lineHtml || '&nbsp;' }}
                     />
+                    {isKeyLine && !isActive && (
+                      <span className="mr-2 self-center shrink-0 text-[9px] text-indigo-500/60">
+                        ●
+                      </span>
+                    )}
                   </div>
                 )
               })}

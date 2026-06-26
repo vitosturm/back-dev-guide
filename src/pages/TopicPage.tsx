@@ -20,14 +20,12 @@ export default function TopicPage() {
 
   const [prevTopicId, setPrevTopicId] = useState(topicId)
   const [selectedId, setSelectedId] = useState(defaultSelectedId)
-  const [hoveredLine, setHoveredLine] = useState<number | null>(null)
+  const [activeLineNum, setActiveLineNum] = useState<number | null>(null)
 
-  // Render-phase reset: when the topic route changes, re-select the entry file
-  // and clear hover state. This is the approved pattern for this repo (see WorkflowTree.tsx history).
   if (prevTopicId !== topicId) {
     setPrevTopicId(topicId)
     setSelectedId(defaultSelectedId)
-    setHoveredLine(null)
+    setActiveLineNum(null)
   }
 
   if (!topic) {
@@ -37,15 +35,22 @@ export default function TopicPage() {
   const selectedNode = workflow ? findNodeById(workflow, selectedId) : null
   const showSidebar = workflow ? isMultiNode(workflow) : false
 
+  function handleLineClick(lineNum: number) {
+    setActiveLineNum((prev) => (prev === lineNum ? null : lineNum))
+  }
+
+  function handleFileSelect(id: string) {
+    setSelectedId(id)
+    setActiveLineNum(null)
+  }
+
   return (
     <div className="flex flex-col">
-      {/* Header strip */}
       <div className="border-b border-neutral-200 px-8 py-5">
         <h1 className="mb-1 text-xl font-bold text-neutral-900">{topic.title}</h1>
         <p className="text-sm text-neutral-500">{topic.description}</p>
       </div>
 
-      {/* 3-column IDE layout (or 2-column for single-file topics) */}
       {workflow && (
         <div
           className={`flex min-h-[580px] ${
@@ -57,31 +62,27 @@ export default function TopicPage() {
               <FileSidebar
                 nodes={workflow}
                 selectedId={selectedId}
-                onSelect={(id) => {
-                  setSelectedId(id)
-                  setHoveredLine(null)
-                }}
+                onSelect={handleFileSelect}
               />
             </div>
           )}
           <div className="flex-1 overflow-hidden border-r border-neutral-200">
             <CodePanel
               node={selectedNode}
-              hoveredLine={hoveredLine}
-              onLineHover={setHoveredLine}
+              activeLineNum={activeLineNum}
+              onLineClick={handleLineClick}
             />
           </div>
           <div className="w-80 shrink-0 overflow-y-auto bg-neutral-950">
             <ExplanationPanel
               node={selectedNode}
-              hoveredLine={hoveredLine}
-              onLineHover={setHoveredLine}
+              activeLineNum={activeLineNum}
+              onLineClick={handleLineClick}
             />
           </div>
         </div>
       )}
 
-      {/* Footer: session video + GitHub source link + per-user notes */}
       <div className="mx-auto w-full max-w-3xl px-8 py-6 flex flex-col gap-6">
         {(topic.videoClip || topic.youtubeClip) && (
           <div>
