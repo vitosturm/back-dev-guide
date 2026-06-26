@@ -5,6 +5,7 @@ import { workflowRegistry } from '@/data/workflows/index'
 import FileSidebar from '@/components/workflow/FileSidebar'
 import CodePanel from '@/components/workflow/CodePanel'
 import ExplanationPanel from '@/components/workflow/ExplanationPanel'
+import VideoPlayer from '@/components/video/VideoPlayer'
 import NotesPanel from '@/components/notes/NotesPanel'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { findFirstFileNode, findNodeById, isMultiNode } from '@/components/workflow/treeUtils'
@@ -80,8 +81,16 @@ export default function TopicPage() {
         </div>
       )}
 
-      {/* Footer: GitHub source link + per-user notes */}
-      <div className="mx-auto w-full max-w-3xl px-8 py-6">
+      {/* Footer: session video + GitHub source link + per-user notes */}
+      <div className="mx-auto w-full max-w-3xl px-8 py-6 flex flex-col gap-6">
+        {(topic.videoClip || topic.youtubeClip) && (
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+              Session recording
+            </p>
+            <VideoPlayer clip={topic.videoClip} ytClip={topic.youtubeClip} />
+          </div>
+        )}
         {topic.sourceUrl && (
           <a
             href={topic.sourceUrl}
