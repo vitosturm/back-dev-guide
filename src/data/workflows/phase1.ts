@@ -200,10 +200,10 @@ app.listen(port, () => console.log(\`Server running at http://localhost:\${port}
         icon: 'typescript',
         language: 'typescript',
         explanation:
-          "Router() creates a mini-app that only handles routing. The route definitions here omit the /posts prefix because app.use('/posts', postsRouter) already provides it — router.get('/') handles GET /posts, router.get('/:id') handles GET /posts/:id. Separating routing from controller logic keeps each file focused on one responsibility.",
+          'Defines all HTTP routes for the /posts resource. Each route maps a method+path to a controller function — the router itself contains no business logic.',
         keyLines: [
-          { line: 11, note: "Router() creates a mini-app that only handles routing — the /posts prefix comes from app.use('/posts', postsRouter) in app.ts, not from here." },
-          { line: 13, note: "router.get('/') handles GET /posts because the mount prefix is already applied. No need to repeat '/posts' inside the router." },
+          { line: 11, note: 'router.get() registers a GET handler — the path is relative to the mount point in app.ts, so /posts is actually mounted at /posts/.' },
+          { line: 13, note: 'router.post() — body is already parsed by express.json() middleware registered in app.ts before any router runs.' },
         ],
         code: `// Posts Router — from WBS SE-6 live session
 import { Router } from 'express'
@@ -231,12 +231,12 @@ postsRouter.delete('/:id', deletePost)
         icon: 'typescript',
         language: 'typescript',
         explanation:
-          "Controller functions receive (req, res) and contain the actual business logic. Typing them with RequestHandler lets TypeScript infer req and res types automatically. The in-memory posts array stands in for a database — the controller pattern is identical when you swap it for Mongoose calls later.",
+          'Receives the parsed request from the router, applies business logic (or delegates to a service), and sends a JSON response. Controllers are the only layer that touches req and res.',
         keyLines: [
-          { line: 2, note: "RequestHandler is Express's type for (req, res, next) => void. TypeScript infers req and res automatically — no manual annotations needed." },
-          { line: 21, note: "req.params.id is always a string. Number() converts it so it matches the numeric id field in the posts array." },
+          { line: 2, note: 'Import Request/Response types from express — gives full TypeScript autocomplete on req.body, req.params, req.query.' },
+          { line: 21, note: "req.params.id is always a string even if the URL segment looks like a number — parse with parseInt() or pass directly to Mongoose findById() which handles string ObjectIds." },
         ],
-        warning: "req.params.id is always a string — forgetting Number() causes find/findIndex to silently return undefined or -1 on every lookup.",
+        warning: "req.params.id is always a string. Mongoose findById() accepts string ObjectIds, but vanilla MongoDB requires an ObjectId instance — always check which layer you're using.",
         code: `// Posts Controller — from WBS SE-6 live session
 import type { RequestHandler } from 'express'
 
@@ -329,7 +329,12 @@ app.listen(port, () => console.log(\`Server running at http://localhost:\${port}
         icon: 'typescript',
         language: 'typescript',
         explanation:
-          "A logging middleware: it records the timestamp and HTTP method before calling next() so the route handler runs, then logs the duration after the handler finishes. next() must always be called — skipping it stalls the request permanently.",
+          'A middleware function runs between the request arriving and the route handler executing. It receives (req, res, next) — calling next() passes control to the next function in the chain.',
+        keyLines: [
+          { line: 4, note: 'next() must be called or the request will hang forever — every middleware must either call next() or send a response.' },
+          { line: 5, note: 'console.log before next() — this is a "before" middleware. To log after the response, call next() first and then log.' },
+        ],
+        warning: 'Never forget to call next(). A middleware that neither calls next() nor sends a response will silently stall the entire request.',
         code: `// timeLogger middleware — from WBS SE-6 live session
 import type { RequestHandler } from 'express'
 
@@ -348,12 +353,12 @@ export const timeLogger: RequestHandler = (req, res, next) => {
         icon: 'typescript',
         language: 'typescript',
         explanation:
-          "The global error handler catches any error passed to next(err) anywhere in the app. The four-parameter signature (err, req, res, next) is what tells Express this is an error handler, not a regular middleware. It always sends a JSON response so the client gets a structured error, not an empty 500.",
+          "A 4-parameter middleware (err, req, res, next) is Express's error handler. Express identifies it by the 4-argument signature — if you omit err, it becomes a regular middleware and errors bypass it.",
         keyLines: [
-          { line: 4, note: "The 4-parameter signature (err, req, res, next) is how Express identifies error-handler middleware. Arity — not a flag — is what matters." },
-          { line: 5, note: "?? 500 defaults to Internal Server Error if the thrown object has no .status property set by the caller." },
+          { line: 4, note: 'The (err, req, res, next) signature is how Express recognises an error-handling middleware — all four parameters must be declared even if next is unused.' },
+          { line: 5, note: 'err.status ?? 500 — custom errors can carry a .status property; anything without one defaults to 500 Internal Server Error.' },
         ],
-        warning: "This middleware MUST be registered last with app.use(errorHandler) — Express only calls it when next(err) is invoked, and only after all routes are registered.",
+        warning: 'The error handler MUST be registered last — after all app.use() routes and routers. If registered first, Express never routes errors to it.',
         code: `// errorHandler middleware — from WBS SE-6 live session
 import type { ErrorRequestHandler } from 'express'
 
@@ -418,10 +423,10 @@ export const User = model('User', userSchema)
         icon: 'typescript',
         language: 'typescript',
         explanation:
-          "ref: 'User' stores only the ObjectId in the database — not the full user document. This keeps the posts collection lean. populate('author') later replaces that ObjectId with the real User document at query time. This is Mongoose's answer to a JOIN: lazy, on-demand, one query away.",
+          'A Mongoose schema defines the shape of documents in a collection. model() compiles the schema into a Model class — the Model is what you query with .find(), .create(), etc.',
         keyLines: [
-          { line: 8, note: "ref: 'User' stores only the ObjectId in MongoDB — not the full document. populate('author') replaces it with the real User at query time." },
-          { line: 13, note: "model('Post', postSchema) compiles the schema. Mongoose uses 'posts' (lowercase + plural) as the collection name automatically." },
+          { line: 8, note: 'type: Schema.Types.ObjectId, ref: "User" creates a reference to the User collection — this is what enables .populate("user") to join documents.' },
+          { line: 13, note: 'model<IPost>("Post", postSchema) — the generic <IPost> gives TypeScript types on query results. The string "Post" is the collection name (MongoDB lowercases it to "posts").' },
         ],
         code: `// Post model with user reference — from WBS SE-6 live session
 import { Schema, model, Types } from 'mongoose'
@@ -755,13 +760,13 @@ export const zodDtoWorkflow: WorkflowTree = [
     icon: 'typescript',
     language: 'typescript',
     explanation:
-      "validateBodyZod is a middleware factory — it takes a Zod schema and returns a RequestHandler. The returned middleware calls schema.safeParse(req.body): on success it overwrites req.body with the parsed (coerced + defaulted) data and calls next(); on failure it sends a 400 with the formatted errors before the route handler ever runs. Rejecting invalid data at the middleware level keeps route handlers clean.",
+      'A reusable middleware factory that takes a Zod schema and returns a middleware function. Calling schema.safeParse() instead of schema.parse() prevents thrown exceptions — validation errors are caught and forwarded to the error handler.',
     keyLines: [
-      { line: 6, note: "validateBodyZod is a middleware factory — it takes a schema and returns a RequestHandler. The returned function is the actual middleware Express calls." },
-      { line: 8, note: "safeParse never throws. It returns { success: true, data } or { success: false, error } — safe to handle in either branch." },
-      { line: 13, note: "req.body = result.data replaces the raw input with Zod's parsed output, which includes coerced types and applied schema defaults." },
+      { line: 6, note: 'safeParse() returns { success, data, error } — it never throws. Use it in middleware so errors can be passed to next(err) cleanly.' },
+      { line: 8, note: 'next(error) with an argument skips all regular middleware and jumps directly to the error handler.' },
+      { line: 13, note: 'req.body = result.data replaces the raw body with the parsed+typed data so downstream controllers receive validated types.' },
     ],
-    warning: "Don't use .parse() here — it throws on invalid input and would crash the server with a 500 instead of returning a structured 400.",
+    warning: 'Never use schema.parse() in middleware — it throws on invalid input, which bypasses Express error handling and crashes the process if no try/catch wraps it.',
     code: `// validateBodyZod middleware — from WBS SE-6 live session
 import type { RequestHandler } from 'express'
 import type { ZodTypeAny } from 'zod/v4'
@@ -787,10 +792,10 @@ export function validateBodyZod(schema: ZodTypeAny): RequestHandler {
         icon: 'typescript',
         language: 'typescript',
         explanation:
-          "z.infer<typeof postSchema> derives the TypeScript type from the Zod schema — you only write the shape once and get both runtime validation and compile-time types for free. Keeping schemas in a separate file makes them importable both by the middleware (for validation) and by service/model code (for the TypeScript type).",
+          'Zod schemas define the shape and constraints of incoming data at runtime. z.infer<typeof postSchema> extracts the TypeScript type for free — one source of truth for both validation and typing.',
         keyLines: [
-          { line: 10, note: "z.infer<typeof postSchema> derives the TypeScript type — write the shape once, get both runtime validation and compile-time types for free." },
-          { line: 7, note: ".length(24) validates a MongoDB ObjectId string — a rough sanity check that prevents obviously invalid values reaching the database." },
+          { line: 10, note: 'z.infer<typeof postSchema> generates a TypeScript type from the schema automatically — no need to duplicate the type definition.' },
+          { line: 7, note: 'z.string().regex(/^[0-9a-fA-F]{24}$/) validates MongoDB ObjectId format at the API boundary before it ever reaches Mongoose.' },
         ],
         code: `// Post DTO schema — from WBS SE-6 live session
 import { z } from 'zod/v4'
