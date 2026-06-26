@@ -12,7 +12,7 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-white">
-      <aside className="flex w-60 shrink-0 flex-col overflow-y-auto border-r border-neutral-200 bg-neutral-50">
+      <aside className="flex w-64 shrink-0 flex-col overflow-y-auto border-r border-neutral-200 bg-neutral-50">
         <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200">
           <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">back-dev-guide</span>
           {!loading && (
