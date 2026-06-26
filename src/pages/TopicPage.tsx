@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { topics } from '@/data/topics'
 import { workflowRegistry } from '@/data/workflows/index'
 import FileSidebar from '@/components/workflow/FileSidebar'
+import FolderOverlay from '@/components/workflow/FolderOverlay'
 import CodePanel from '@/components/workflow/CodePanel'
 import ExplanationPanel from '@/components/workflow/ExplanationPanel'
 import VideoPlayer from '@/components/video/VideoPlayer'
@@ -21,11 +22,13 @@ export default function TopicPage() {
   const [prevTopicId, setPrevTopicId] = useState(topicId)
   const [selectedId, setSelectedId] = useState(defaultSelectedId)
   const [activeLineNum, setActiveLineNum] = useState<number | null>(null)
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
 
   if (prevTopicId !== topicId) {
     setPrevTopicId(topicId)
     setSelectedId(defaultSelectedId)
     setActiveLineNum(null)
+    setActiveFolderId(null)
   }
 
   if (!topic) {
@@ -33,6 +36,9 @@ export default function TopicPage() {
   }
 
   const selectedNode = workflow ? findNodeById(workflow, selectedId) : null
+  const activeFolderNode = workflow && activeFolderId
+    ? findNodeById(workflow, activeFolderId)
+    : null
   const showSidebar = workflow ? isMultiNode(workflow) : false
 
   function handleLineClick(lineNum: number) {
@@ -42,6 +48,7 @@ export default function TopicPage() {
   function handleFileSelect(id: string) {
     setSelectedId(id)
     setActiveLineNum(null)
+    setActiveFolderId(null)
   }
 
   return (
@@ -63,14 +70,20 @@ export default function TopicPage() {
                 nodes={workflow}
                 selectedId={selectedId}
                 onSelect={handleFileSelect}
+                onFolderSelect={(id) => setActiveFolderId((prev) => (prev === id ? null : id))}
               />
             </div>
           )}
-          <div className="flex-1 overflow-hidden border-r border-neutral-200">
+          {/* Code panel — relative wrapper for the folder overlay */}
+          <div className="relative flex-1 overflow-hidden border-r border-neutral-200">
             <CodePanel
               node={selectedNode}
               activeLineNum={activeLineNum}
               onLineClick={handleLineClick}
+            />
+            <FolderOverlay
+              node={activeFolderNode ?? null}
+              onClose={() => setActiveFolderId(null)}
             />
           </div>
           <div className="w-80 shrink-0 overflow-y-auto bg-neutral-950">

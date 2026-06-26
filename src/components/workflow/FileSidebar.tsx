@@ -29,11 +29,11 @@ interface FileSidebarProps {
   nodes: WorkflowTreeData
   selectedId: string | null
   onSelect: (id: string) => void
+  onFolderSelect?: (id: string) => void
 }
 
-export default function FileSidebar({ nodes, selectedId, onSelect }: FileSidebarProps) {
+export default function FileSidebar({ nodes, selectedId, onSelect, onFolderSelect }: FileSidebarProps) {
   const flat = flatten(nodes)
-  // key on the root node id so the stagger animation replays when the topic changes
   const rootId = nodes[0]?.id ?? 'root'
 
   return (
@@ -47,24 +47,28 @@ export default function FileSidebar({ nodes, selectedId, onSelect }: FileSidebar
       {flat.map(({ node, depth }) => {
         const colors = roleColors(node)
         const isSelected = node.id === selectedId
-        const clickable = node.kind === 'file'
+        const isFile = node.kind === 'file'
+        const isFolder = node.kind === 'folder'
         const filename = node.filePath.split('/').pop() ?? node.filePath
+
+        function handleClick() {
+          if (isFile) onSelect(node.id)
+          else if (isFolder && onFolderSelect) onFolderSelect(node.id)
+        }
 
         return (
           <motion.div
             key={node.id}
             variants={item}
-            onClick={clickable ? () => onSelect(node.id) : undefined}
+            onClick={handleClick}
             style={{ paddingLeft: `${12 + depth * 16}px` }}
             className={`relative flex items-center gap-2 py-1.5 pr-3 text-xs transition-colors ${
-              clickable ? 'cursor-pointer' : 'cursor-default'
+              isFile || isFolder ? 'cursor-pointer' : 'cursor-default'
             } ${isSelected ? 'bg-neutral-800' : 'hover:bg-neutral-800/50'}`}
           >
-            {/* Left accent bar for selected file */}
             {isSelected && (
               <div className={`absolute left-0 top-0 h-full w-0.5 ${colors.accent}`} />
             )}
-            {/* Depth connector line */}
             {depth > 0 && (
               <div
                 className="pointer-events-none absolute border-l border-neutral-700/60"
@@ -83,7 +87,10 @@ export default function FileSidebar({ nodes, selectedId, onSelect }: FileSidebar
             >
               {filename}
             </span>
-            <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${colors.dot}`} />
+            {isFolder && onFolderSelect && (
+              <span className="shrink-0 text-[9px] text-neutral-600">ℹ</span>
+            )}
+            {isFile && <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${colors.dot}`} />}
           </motion.div>
         )
       })}
