@@ -202,8 +202,8 @@ app.listen(port, () => console.log(\`Server running at http://localhost:\${port}
         explanation:
           'Defines all HTTP routes for the /posts resource. Each route maps a method+path to a controller function — the router itself contains no business logic.',
         keyLines: [
-          { line: 11, note: 'router.get() registers a GET handler — the path is relative to the mount point in app.ts, so /posts is actually mounted at /posts/.' },
-          { line: 13, note: 'router.post() — body is already parsed by express.json() middleware registered in app.ts before any router runs.' },
+          { line: 13, note: 'router.get() registers a GET handler — the path is relative to the mount point in app.ts, so app.use(\'/posts\', postsRouter) makes this resolve to GET /posts.' },
+          { line: 15, note: 'router.post() — body is already parsed by express.json() middleware registered in app.ts before any router runs.' },
         ],
         code: `// Posts Router — from WBS SE-6 live session
 import { Router } from 'express'
@@ -762,8 +762,8 @@ export const zodDtoWorkflow: WorkflowTree = [
     explanation:
       'A reusable middleware factory that takes a Zod schema and returns a middleware function. Calling schema.safeParse() instead of schema.parse() prevents thrown exceptions — validation errors are caught and forwarded to the error handler.',
     keyLines: [
-      { line: 6, note: 'safeParse() returns { success, data, error } — it never throws. Use it in middleware so errors can be passed to next(err) cleanly.' },
-      { line: 8, note: 'next(error) with an argument skips all regular middleware and jumps directly to the error handler.' },
+      { line: 8, note: 'safeParse() returns { success, data, error } — it never throws. Use it in middleware so validation failures can be handled without try/catch.' },
+      { line: 10, note: 'res.status(400).json() sends the validation error immediately. The body is only replaced on line 13 if this check passes — errors never reach the controller.' },
       { line: 13, note: 'req.body = result.data replaces the raw body with the parsed+typed data so downstream controllers receive validated types.' },
     ],
     warning: 'Never use schema.parse() in middleware — it throws on invalid input, which bypasses Express error handling and crashes the process if no try/catch wraps it.',
@@ -795,7 +795,7 @@ export function validateBodyZod(schema: ZodTypeAny): RequestHandler {
           'Zod schemas define the shape and constraints of incoming data at runtime. z.infer<typeof postSchema> extracts the TypeScript type for free — one source of truth for both validation and typing.',
         keyLines: [
           { line: 10, note: 'z.infer<typeof postSchema> generates a TypeScript type from the schema automatically — no need to duplicate the type definition.' },
-          { line: 7, note: 'z.string().regex(/^[0-9a-fA-F]{24}$/) validates MongoDB ObjectId format at the API boundary before it ever reaches Mongoose.' },
+          { line: 7, note: 'z.string().length(24) validates that the author field is exactly 24 characters — the exact length of a MongoDB ObjectId string — before it ever reaches Mongoose.' },
         ],
         code: `// Post DTO schema — from WBS SE-6 live session
 import { z } from 'zod/v4'
