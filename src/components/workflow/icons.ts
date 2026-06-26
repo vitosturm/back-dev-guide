@@ -13,6 +13,13 @@ import folderConfigIcon from 'material-icon-theme/icons/folder-config.svg?url'
 import folderMiddlewareIcon from 'material-icon-theme/icons/folder-middleware.svg?url'
 import folderRoutesIcon from 'material-icon-theme/icons/folder-routes.svg?url'
 import folderControllerIcon from 'material-icon-theme/icons/folder-controller.svg?url'
+import folderApiIcon from 'material-icon-theme/icons/folder-api.svg?url'
+import folderServerIcon from 'material-icon-theme/icons/folder-server.svg?url'
+import folderEnvironmentIcon from 'material-icon-theme/icons/folder-environment.svg?url'
+import folderLibIcon from 'material-icon-theme/icons/folder-lib.svg?url'
+import folderUploadIcon from 'material-icon-theme/icons/folder-upload.svg?url'
+import folderTypescriptIcon from 'material-icon-theme/icons/folder-typescript.svg?url'
+import databaseIcon from 'material-icon-theme/icons/database.svg?url'
 import type { WorkflowIconKey } from '@/data/workflows/types'
 
 const ICONS: Record<WorkflowIconKey, string> = {
@@ -31,6 +38,13 @@ const ICONS: Record<WorkflowIconKey, string> = {
   'folder-middleware': folderMiddlewareIcon,
   'folder-routes': folderRoutesIcon,
   'folder-controller': folderControllerIcon,
+  'folder-api': folderApiIcon,
+  'folder-server': folderServerIcon,
+  'folder-environment': folderEnvironmentIcon,
+  'folder-lib': folderLibIcon,
+  'folder-upload': folderUploadIcon,
+  'folder-typescript': folderTypescriptIcon,
+  database: databaseIcon,
 }
 
 export function resolveIcon(key: WorkflowIconKey): string {

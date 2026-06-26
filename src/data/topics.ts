@@ -1,3 +1,5 @@
+import type { WorkflowIconKey } from '@/data/workflows/types'
+
 export interface Topic {
   id: string
   phase: 0 | 1 | 2 | 3 | 4
@@ -7,6 +9,7 @@ export interface Topic {
   sourceUrl?: string   // SE-6 GitHub tree URL for reference-only topics (and optionally runnable ones)
   videoClip?: VideoClip
   youtubeClip?: YouTubeClip
+  icon?: WorkflowIconKey
 }
 
 export interface VideoClip {
@@ -78,6 +81,7 @@ export const topics: Topic[] = [
     description: 'Running TypeScript natively in Node.js, #import path aliases via package.json imports field, generic utility functions',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/19-MongoDB/01_Running_TS_in_NodeJS',
     videoClip: { file: 'node-ts-setup.mp4', start: 0 },
+    icon: 'nodejs',
   },
   {
     id: 'mongoose-models',
@@ -86,6 +90,7 @@ export const topics: Topic[] = [
     description: 'Schema definitions, model creation with model(), document relationships, populate() for joined queries',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/19-MongoDB/02_Mongoose',
     videoClip: { file: 'mongoose-models.mp4', start: 0 },
+    icon: 'database',
   },
   {
     id: 'mongodb-crud-cli',
@@ -94,6 +99,7 @@ export const topics: Topic[] = [
     description: 'Commander.js CLI with add, list, update, delete, clearDB commands against a MongoDB collection',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/19-MongoDB/03_Crud_CLI',
     videoClip: { file: 'mongodb-crud-cli.mp4', start: 0 },
+    icon: 'console',
   },
   {
     id: 'node-http',
@@ -102,6 +108,7 @@ export const topics: Topic[] = [
     description: 'Raw http.createServer, routing by method and URL, writeHead with JSON content-type, status codes',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/01_Node_HTTP',
     videoClip: { file: 'node-http.mp4', start: 0 },
+    icon: 'nodejs',
   },
   {
     id: 'express-intro',
@@ -110,6 +117,7 @@ export const topics: Topic[] = [
     description: 'Express app setup, app.get/all with route handlers, req.params, res.json, res.status chain',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/03_Express_Intro',
     videoClip: { file: 'express-intro.mp4', start: 0 },
+    icon: 'nodejs',
   },
   {
     id: 'express-routers',
@@ -118,6 +126,7 @@ export const topics: Topic[] = [
     description: 'Router() modules, controller pattern, app.use() mounting, express.json() middleware',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/04_Express_Routers',
     videoClip: { file: 'express-routers.mp4', start: 0 },
+    icon: 'folder-routes',
   },
   {
     id: 'blog-api',
@@ -126,6 +135,7 @@ export const topics: Topic[] = [
     description: 'Full REST API — users + posts CRUD, MongoDB relationships via Mongoose populate()',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/05_BlogAPI',
     videoClip: { file: 'blog-api.mp4', start: 0 },
+    icon: 'folder-api',
   },
   {
     id: 'express-middlewares',
@@ -134,6 +144,7 @@ export const topics: Topic[] = [
     description: 'Custom middleware chain: timeLogger, methodLogger, maintenanceMode, payWall, global errorHandler',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/06_Express_Middlewares',
     videoClip: { file: 'express-middlewares.mp4', start: 0 },
+    icon: 'folder-middleware',
   },
   {
     id: 'zod-dto',
@@ -142,6 +153,7 @@ export const topics: Topic[] = [
     description: 'Zod schemas as Data Transfer Objects, validateBodyZod middleware, userSchema and postSchema with zod/v4',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/07_ZOD_DTO',
     videoClip: { file: 'zod-dto.mp4', start: 0 },
+    icon: 'typescript',
   },
   {
     id: 'file-upload',
@@ -150,5 +162,6 @@ export const topics: Topic[] = [
     description: 'Multer middleware with Cloudinary storage, CloudinaryStorage config, multipart/form-data endpoint',
     sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/08_File_Upload',
     videoClip: { file: 'file-upload.mp4', start: 0 },
+    icon: 'folder-upload',
   },
 ]

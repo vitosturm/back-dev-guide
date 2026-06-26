@@ -16,10 +16,18 @@ export type WorkflowIconKey =
   | 'folder-middleware'
   | 'folder-routes'
   | 'folder-controller'
+  | 'folder-api'
+  | 'folder-server'
+  | 'folder-environment'
+  | 'folder-lib'
+  | 'folder-upload'
+  | 'folder-typescript'
+  | 'database'
 
 export interface KeyLine {
   line: number
   note: string
+  topicLink?: string
 }
 
 export interface WorkflowNode {
