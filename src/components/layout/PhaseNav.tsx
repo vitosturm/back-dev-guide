@@ -33,25 +33,29 @@ export default function PhaseNav() {
 
         return (
           <div key={id}>
-            {/* Phase header — clickable to collapse/expand */}
+            {/* Phase header */}
             <button
               onClick={() => toggle(id)}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-neutral-100"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors"
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-bright)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
             >
               <motion.span
                 animate={{ rotate: isOpen ? 90 : 0 }}
                 transition={{ duration: 0.15, ease: 'easeInOut' }}
-                className="shrink-0 text-[10px] text-neutral-400"
+                className="shrink-0 text-[10px]"
+                style={{ color: 'var(--text-faint)' }}
               >
                 ▶
               </motion.span>
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-neutral-700">{label}</p>
-                <p className="truncate text-[10px] text-neutral-400">{subtitle}</p>
+                <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{label}</p>
+                <p className="truncate text-[10px]" style={{ color: 'var(--text-faint)' }}>{subtitle}</p>
               </div>
             </button>
 
-            {/* Topic list — animates open/closed */}
+            {/* Topic list */}
             <AnimatePresence initial={false}>
               {isOpen && (
                 <motion.ul
@@ -65,18 +69,45 @@ export default function PhaseNav() {
                     <li key={topic.id}>
                       <NavLink
                         to={`/topic/${topic.id}`}
-                        className={({ isActive }) =>
-                          `relative flex items-center gap-2 py-1.5 pl-7 pr-3 text-xs transition-colors ${
-                            isActive
-                              ? 'bg-indigo-50 font-medium text-indigo-700'
-                              : 'text-neutral-600 hover:bg-neutral-100'
-                          }`
-                        }
+                        className="relative flex items-center gap-2 py-1.5 pl-7 pr-3 text-xs transition-colors"
+                        style={({ isActive }) => ({
+                          background: isActive ? 'var(--indigo-dim)' : 'none',
+                          color: isActive ? 'var(--indigo)' : 'var(--text-muted)',
+                          fontWeight: isActive ? 500 : 400,
+                          textDecoration: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          paddingTop: '0.375rem',
+                          paddingBottom: '0.375rem',
+                          paddingLeft: '1.75rem',
+                          paddingRight: '0.75rem',
+                          fontSize: '0.75rem',
+                          transition: 'color 0.12s, background 0.12s',
+                          position: 'relative',
+                        })}
+                        onMouseEnter={e => {
+                          const el = e.currentTarget
+                          if (!el.getAttribute('aria-current')) {
+                            el.style.background = 'var(--surface-bright)'
+                            el.style.color = 'var(--text)'
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          const el = e.currentTarget
+                          if (!el.getAttribute('aria-current')) {
+                            el.style.background = 'none'
+                            el.style.color = 'var(--text-muted)'
+                          }
+                        }}
                       >
                         {({ isActive }) => (
                           <>
                             {isActive && (
-                              <div className="absolute left-0 top-0 h-full w-0.5 bg-indigo-500" />
+                              <div
+                                className="absolute left-0 top-0 h-full w-0.5"
+                                style={{ background: 'var(--indigo)' }}
+                              />
                             )}
                             {topic.icon ? (
                               <img
@@ -89,7 +120,7 @@ export default function PhaseNav() {
                             )}
                             <span className="flex-1 truncate">{topic.title}</span>
                             {topic.videoClip && (
-                              <span className="shrink-0 text-[9px] text-neutral-400">▶</span>
+                              <span className="shrink-0 text-[9px]" style={{ color: 'var(--text-faint)' }}>▶</span>
                             )}
                           </>
                         )}

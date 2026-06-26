@@ -4,10 +4,26 @@
 @import "@blocknote/mantine/style.css";
 
 :root {
-  color-scheme: light;
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface-bright: #222633;
+  --border: #2e3348;
+  --text: #e2e4ed;
+  --text-secondary: #b0b4c8;
+  --text-muted: #8b8fa7;
+  --text-faint: #555a73;
+  --indigo: #818cf8;
+  --indigo-dim: rgba(129, 140, 248, 0.14);
+  --green: #4ade80;
+  --blue: #5b9cf5;
+  --purple: #a78bfa;
+  --yellow: #f5c542;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }

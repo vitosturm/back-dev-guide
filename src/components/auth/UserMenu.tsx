@@ -30,22 +30,29 @@ export default function UserMenu({ user }: UserMenuProps) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700"
+        className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white"
+        style={{ background: 'var(--indigo)', border: 'none', cursor: 'pointer' }}
         title={user.email}
       >
         {initial}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 z-50 min-w-48 rounded-xl border border-neutral-200 bg-white py-1 shadow-lg">
-          <div className="flex items-center gap-2 px-4 py-2 text-xs text-neutral-500">
+        <div
+          className="absolute right-0 top-10 z-50 min-w-48 rounded-xl py-1 shadow-2xl"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        >
+          <div className="flex items-center gap-2 px-4 py-2 text-xs" style={{ color: 'var(--text-muted)' }}>
             <UserIcon size={12} />
             {user.email}
           </div>
-          <div className="my-1 h-px bg-neutral-100" />
+          <div className="my-1 h-px" style={{ background: 'var(--border)' }} />
           <button
             onClick={signOut}
-            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+            className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-bright)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
           >
             <LogOut size={14} />
             Sign out

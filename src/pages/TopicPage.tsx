@@ -32,7 +32,7 @@ export default function TopicPage() {
   }
 
   if (!topic) {
-    return <div className="p-8 text-neutral-500">Topic not found.</div>
+    return <div className="p-8" style={{ color: 'var(--text-muted)' }}>Topic not found.</div>
   }
 
   const selectedNode = workflow ? findNodeById(workflow, selectedId) : null
@@ -53,9 +53,9 @@ export default function TopicPage() {
 
   return (
     <div className="flex flex-col">
-      <div className="border-b border-neutral-200 px-8 py-5">
-        <h1 className="mb-1 text-xl font-bold text-neutral-900">{topic.title}</h1>
-        <p className="text-sm text-neutral-500">{topic.description}</p>
+      <div className="border-b px-8 py-5" style={{ borderColor: 'var(--border)' }}>
+        <h1 className="mb-1 text-xl font-bold" style={{ color: 'var(--text)' }}>{topic.title}</h1>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{topic.description}</p>
       </div>
 
       {workflow && (
@@ -75,7 +75,7 @@ export default function TopicPage() {
             </div>
           )}
           {/* Code panel — relative wrapper for the folder overlay */}
-          <div className="relative flex-1 overflow-hidden border-r border-neutral-200">
+          <div className="relative flex-1 overflow-hidden border-r" style={{ borderColor: 'var(--border)' }}>
             <CodePanel
               node={selectedNode}
               activeLineNum={activeLineNum}
@@ -110,7 +110,10 @@ export default function TopicPage() {
             href={topic.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+            style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+            onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = 'var(--surface-bright)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = 'none')}
           >
             View source code on GitHub →
           </a>
