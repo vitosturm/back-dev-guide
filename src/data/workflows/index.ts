@@ -21,6 +21,7 @@ import {
   blogApiWorkflow,
   zodDtoWorkflow,
   fileUploadWorkflow,
+  blogRecapWorkflow,
 } from './phase1'
 
 export const workflowRegistry: Record<string, WorkflowTree> = {
@@ -43,4 +44,5 @@ export const workflowRegistry: Record<string, WorkflowTree> = {
   'express-middlewares': expressMiddlewaresWorkflow,
   'zod-dto': zodDtoWorkflow,
   'file-upload': fileUploadWorkflow,
+  'blog-recap': blogRecapWorkflow,
 }

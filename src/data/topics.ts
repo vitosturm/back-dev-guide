@@ -188,4 +188,12 @@ export const topics: Topic[] = [
     videoClip: { file: 'file-upload.mp4', start: 0 },
     icon: 'folder-upload',
   },
+  {
+    id: 'blog-recap',
+    phase: 1,
+    title: 'Phase 1 Recap — Blog API',
+    description: 'Full capstone: Mongoose CRUD + Zod validation + Multer/Cloudinary uploads + errorHandler + path aliases — all patterns from Phase 1 in one clean codebase',
+    sourceUrl: 'https://github.com/SE-6/Backend/tree/main/20-RESTful_APIs/09_Recap',
+    icon: 'folder-api',
+  },
 ]

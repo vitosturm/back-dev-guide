@@ -31,6 +31,13 @@ import { code as zodPostSchemaCode } from './code/phase1/zod-dto--post-schema'
 import { code as zodAppCode } from './code/phase1/zod-dto--app'
 import { code as fileUploadCloudinaryCode } from './code/phase1/file-upload--cloudinary-config'
 import { code as fileUploadAppCode } from './code/phase1/file-upload--app'
+import { code as blogRecapAppCode } from './code/phase1/blog-recap--app'
+import { code as blogRecapModelCode } from './code/phase1/blog-recap--model'
+import { code as blogRecapControllerCode } from './code/phase1/blog-recap--controller'
+import { code as blogRecapRouterCode } from './code/phase1/blog-recap--router'
+import { code as blogRecapSchemaCode } from './code/phase1/blog-recap--schema'
+import { code as blogRecapUploadCode } from './code/phase1/blog-recap--upload'
+import { code as blogRecapErrorHandlerCode } from './code/phase1/blog-recap--error-handler'
 
 export const nodeTsSetupWorkflow: WorkflowTree = [
   {
@@ -561,6 +568,123 @@ export const restPrinciplesWorkflow: WorkflowTree = [
           { line: 17, note: 'Stateless: Authorization: Bearer <token> is re-sent with every request. The server authenticates from the token alone — no server-side session storage needed.' },
         ],
         code: restPrinciplesResponseCode,
+      },
+    ],
+  },
+]
+
+export const blogRecapWorkflow: WorkflowTree = [
+  {
+    id: 'app',
+    kind: 'file',
+    filePath: 'src/app.ts',
+    icon: 'typescript',
+    language: 'typescript',
+    explanation:
+      "The recap server is the cleanest version of everything learned in Phase 1: express.json() parses bodies, timeLogger logs every request, blogPostRouter handles /posts CRUD with stacked middleware, and errorHandler catches everything. The #db, #middlewares, #routers path aliases keep imports readable — each alias is mapped in package.json's \"imports\" field.",
+    keyLines: [
+      { line: 2, note: "import '#db' — a side-effect import that runs the DB connection immediately. The db module calls mongoose.connect() on import; no explicit await here because the module is self-contained." },
+      { line: 3, note: "#middlewares and #routers are Node subpath aliases. They point to barrel index files that re-export everything, keeping app.ts free of long relative paths." },
+      { line: 10, note: 'app.use(timeLogger) — registered before the router so it runs on every request. Middleware order matters: any app.use() above a route runs for that route.' },
+      { line: 14, note: 'app.use(errorHandler) must be the last app.use() call. Controllers throw errors; Express catches them and routes to the 4-param handler only if it is registered after all routes.' },
+    ],
+    code: blogRecapAppCode,
+    children: [
+      {
+        id: 'model',
+        kind: 'file',
+        filePath: 'src/models/BlogPost.ts',
+        icon: 'typescript',
+        language: 'typescript',
+        explanation:
+          "BlogPost stores author as a plain String — no ObjectId reference — because this API doesn't need a separate User collection. The optional image_url and image_public_id fields are set by the upload middleware when a file is included; omitted otherwise.",
+        keyLines: [
+          { line: 7, note: 'author: String (not ObjectId) — simple scalar field. No populate() needed. Trade-off: author data duplicated across posts, but no JOIN required to read a post.' },
+          { line: 8, note: "image_url stores the Cloudinary CDN URL. req.file.path from multer-storage-cloudinary is the CDN URL, not a local filesystem path — naming is misleading but intentional." },
+          { line: 9, note: 'image_public_id is the Cloudinary identifier used to delete or transform the image. Without storing this, old images accumulate in Cloudinary on every update.' },
+          { line: 13, note: "model('Blogpost', ...) — note lowercase 'p': Mongoose creates a 'blogposts' collection. The model name must exactly match any ref: 'Blogpost' used elsewhere." },
+        ],
+        code: blogRecapModelCode,
+      },
+      {
+        id: 'router',
+        kind: 'file',
+        filePath: 'src/routers/blogPostRouter.ts',
+        icon: 'typescript',
+        language: 'typescript',
+        explanation:
+          "Routes that mutate data stack three middleware functions in order: upload.single('image') parses the multipart form and uploads to Cloudinary, validateBodyZod validates the text fields, and the controller runs only if both pass. GET routes skip both — no file or body validation needed for reads.",
+        keyLines: [
+          { line: 15, note: "upload.single('image') — Multer middleware runs first. It parses multipart/form-data and sets req.file. The controller's req.body fields are text parts of the same form." },
+          { line: 16, note: 'validateBodyZod(blogPostInputSchema) runs second — validates req.body text fields with Zod. If invalid, it calls res.status(400) and the controller never runs.' },
+          { line: 17, note: 'createPost only runs if upload and validation both pass. It receives a clean req.body (Zod-typed) and req.file (Cloudinary result or undefined).' },
+        ],
+        code: blogRecapRouterCode,
+        children: [
+          {
+            id: 'controller',
+            kind: 'file',
+            filePath: 'src/controllers/blogPostController.ts',
+            icon: 'typescript',
+            language: 'typescript',
+            explanation:
+              "The controller combines all Phase 1 patterns: Mongoose CRUD, optional Cloudinary file handling, and structured error throwing. The key pattern is throw new Error('...', { cause: { status: 404 } }) — the error handler in app.ts reads cause.status to set the HTTP response code, keeping error formatting out of every controller.",
+            keyLines: [
+              { line: 23, note: "throw new Error('Post not found', { cause: { status: 404 } }) — the Error cause option (ES2022) carries arbitrary metadata. The error handler extracts cause.status to set res.status()." },
+              { line: 30, note: 'req.file is set by upload.single() if a file was included; undefined otherwise. The optional chaining image?.path safely skips undefined — image_url stays unset for text-only posts.' },
+              { line: 31, note: 'image?.filename is the Cloudinary public_id. Store it now — you need it to call cloudinary.uploader.destroy() on future update or delete.' },
+              { line: 43, note: "cloudinary.uploader.destroy(post.image_public_id) deletes the old image from Cloudinary before saving the new one. Without this, replaced images accumulate and are never cleaned up." },
+              { line: 57, note: 'post.save() re-runs Mongoose validators and hooks on the modified document. findByIdAndUpdate() skips validators by default — use save() when you need them to run.' },
+            ],
+            code: blogRecapControllerCode,
+          },
+          {
+            id: 'schema',
+            kind: 'file',
+            filePath: 'src/schemas/blogPostSchema.ts',
+            icon: 'typescript',
+            language: 'typescript',
+            explanation:
+              "Zod schema for the incoming request body. All text fields have minimum-length constraints. Image fields are optional because clients submit form data with or without a file attachment. .strict() rejects any extra field not listed — prevents accidental field injection.",
+            keyLines: [
+              { line: 5, note: 'z.string().min(3) — Zod validates at runtime. If title is missing or too short, validateBodyZod middleware returns 400 before the controller runs.' },
+              { line: 10, note: 'z.url() is Zod v4 shorthand for z.string().url(). .optional() means the field can be absent entirely — undefined passes validation.' },
+              { line: 13, note: '.strict() — any field not declared in the schema (e.g. _id, __v) causes a validation error. Safer than .strip() which silently drops extra fields.' },
+            ],
+            warning: '.strict() rejects extra fields. If a client sends an unexpected field, Zod returns a 400 before the controller runs. Use .strip() if you prefer to silently ignore extras.',
+            code: blogRecapSchemaCode,
+          },
+          {
+            id: 'upload',
+            kind: 'file',
+            filePath: 'src/middlewares/upload.ts',
+            icon: 'typescript',
+            language: 'typescript',
+            explanation:
+              "CloudinaryStorage connects Multer to Cloudinary: instead of saving files to disk, Multer pipes the upload directly to Cloudinary's API. The folder param organises uploads inside Cloudinary. After upload.single() runs, req.file.path is the public CDN URL and req.file.filename is the public_id for deletions.",
+            keyLines: [
+              { line: 5, note: 'cloudinary.config() reads from environment variables. Never hardcode cloud_name, api_key, or api_secret — they give full write/delete access to your media library.' },
+              { line: 11, note: 'new CloudinaryStorage() — a Multer storage adapter. Files never touch the local filesystem; they stream directly from the client to Cloudinary.' },
+              { line: 13, note: "folder: 'recap_posts' — all uploaded files go to this named folder in Cloudinary. Useful for organising assets and applying bulk transformations later." },
+            ],
+            code: blogRecapUploadCode,
+          },
+        ],
+      },
+      {
+        id: 'error-handler',
+        kind: 'file',
+        filePath: 'src/middlewares/errorHandler.ts',
+        icon: 'typescript',
+        language: 'typescript',
+        explanation:
+          "The global error handler reads the HTTP status from the error's cause property — set at throw time in controllers — and falls back to 500 if none is provided. This keeps status-code logic out of every controller: controllers throw structured errors, the handler formats them.",
+        keyLines: [
+          { line: 3, note: 'ErrorRequestHandler has four parameters (err, req, res, next) — Express identifies error handlers by arity. If you omit err, Express treats it as a regular middleware and errors bypass it.' },
+          { line: 4, note: 'err.cause?.status — the Error cause option (ES2022). Controllers set it via throw new Error("...", { cause: { status: 404 } }). Number() coerces to number; || 500 is the default.' },
+        ],
+        warning: 'The error handler must be registered LAST in app.ts — after all routes and routers. If placed earlier, Express never routes thrown errors to it.',
+        code: blogRecapErrorHandlerCode,
       },
     ],
   },
