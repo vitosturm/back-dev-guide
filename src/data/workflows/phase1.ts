@@ -36,6 +36,10 @@ export const nodeTsSetupWorkflow: WorkflowTree = [
     language: 'typescript',
     explanation:
       "Entry point. package.json's \"imports\" field maps the #utils alias to ./src/utils/index.ts — Node's native subpath imports, no bundler needed. tsx runs this file directly without a separate compile step.",
+    keyLines: [
+      { line: 3, note: "'#utils' is a Node.js subpath import — not an npm package. Mapped to ./src/utils/index.ts in package.json \"imports\" field; no bundler or tsconfig paths needed." },
+      { line: 5, note: 'TypeScript infers T=number from the array literal — no need to write pickRandom<number>([...]). Generic type inference works at the call site.' },
+    ],
     code: nodeTsSetupAppCode,
     children: [
       {
@@ -46,6 +50,11 @@ export const nodeTsSetupWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           'A generic function: pickRandom<T> works on an array of any type and returns an element of that same type (or undefined for an empty array) — the relationship between input and output type is enforced by the generic, not hardcoded to one type.',
+        keyLines: [
+          { line: 2, note: '<T> is the generic parameter — TypeScript infers T from the array passed in. pickRandom([1,2,3]) returns number | undefined without any explicit annotation.' },
+          { line: 3, note: 'Early return undefined for empty arrays. The return type T | undefined forces callers to handle the empty-array case.' },
+          { line: 4, note: 'Math.floor(Math.random() * arr.length) — Math.random() gives [0, 1), multiplied by length gives [0, length), floor converts to a valid integer index.' },
+        ],
         code: nodeTsSetupUtilsCode,
       },
     ],
@@ -61,6 +70,11 @@ export const nodeHttpWorkflow: WorkflowTree = [
     language: 'typescript',
     explanation:
       'Raw Node.js http.createServer with no framework. The single requestHandler reads req.method and req.url manually to route between /posts and /posts/:id, and createResponse centralizes setting the JSON content-type header and ending the response — this is exactly the boilerplate Express (next topic) eliminates.',
+    keyLines: [
+      { line: 9, note: "res.writeHead() sets the HTTP status code and response headers manually. Express's res.json() does this automatically — this is the boilerplate it eliminates." },
+      { line: 19, note: 'requestHandler is the single function that handles ALL requests. Method and URL are read from req to route manually — express.Router() replaces this pattern.' },
+      { line: 39, note: 'http.createServer(requestHandler) — this is the low-level Node API that Express wraps. The handler is called once per incoming HTTP connection.' },
+    ],
     code: nodeHttpServerCode,
   },
 ]
@@ -74,6 +88,12 @@ export const expressIntroWorkflow: WorkflowTree = [
     language: 'typescript',
     explanation:
       "Express app: app.get registers a handler for one route, app.all handles every HTTP method on /test and branches on req.method manually. req.params.id arrives as a string even though the data's id field is a number — Number(id) bridges that.",
+    keyLines: [
+      { line: 9, note: 'app.get() + res.json() in one line — Express sets Content-Type: application/json and calls JSON.stringify() automatically.' },
+      { line: 12, note: "':id' in the route path defines a URL parameter. Express captures it as req.params.id — the colon is the syntax, 'id' is the key." },
+      { line: 14, note: 'Number(id) converts the string param to number. req.params values are always strings — compare carefully against numeric data.' },
+      { line: 21, note: 'app.all() matches every HTTP method. Useful for learning; in production use separate app.get/post/put/delete handlers.' },
+    ],
     code: expressIntroAppCode,
     children: [
       {
@@ -84,6 +104,10 @@ export const expressIntroWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           'Static in-memory data the routes serve — no database yet (that arrives in the next phase with Mongoose/MongoDB).',
+        keyLines: [
+          { line: 2, note: 'Plain JS array with no schema — no validation, no types enforced. Compare with Mongoose schemas (next phase) which define required fields and types.' },
+          { line: 8, note: 'Nested object { rate, count } inline in the array. In MongoDB this becomes an embedded sub-document — no JOIN needed.' },
+        ],
         code: expressIntroDataCode,
       },
     ],
@@ -99,6 +123,10 @@ export const expressRoutersWorkflow: WorkflowTree = [
     language: 'typescript',
     explanation:
       "express.json() parses incoming request bodies as JSON — without it, req.body is undefined. app.use('/posts', postsRouter) mounts the entire router under a prefix: every route defined in postsRouter is automatically prefixed with /posts, so router.get('/') becomes GET /posts.",
+    keyLines: [
+      { line: 8, note: 'express.json() is a body-parser middleware. Without it req.body is undefined for every POST/PUT request. Register it once globally before any routes.' },
+      { line: 9, note: "app.use('/posts', postsRouter) mounts the router. Every route inside postsRouter is prefixed with /posts — router.get('/') becomes GET /posts." },
+    ],
     code: expressRoutersAppCode,
     children: [
       {
@@ -143,6 +171,11 @@ export const expressMiddlewaresWorkflow: WorkflowTree = [
     language: 'typescript',
     explanation:
       "Middleware runs in the order it's registered with app.use(). Each function receives (req, res, next) — calling next() passes control to the next middleware in the chain. Error-handling middleware has four parameters (err, req, res, next); Express identifies it by arity and only invokes it when a previous middleware calls next(err).",
+    keyLines: [
+      { line: 10, note: 'app.use(timeLogger) registers middleware globally — it runs before every route handler below it. Order matters: put it before routes, not after.' },
+      { line: 17, note: 'next(new Error(...)) passes an error to the chain. Express skips all normal middleware and routes and jumps directly to the 4-parameter error handler.' },
+      { line: 21, note: 'app.use(errorHandler) must be registered last. If placed before routes, errors from those routes would never reach it.' },
+    ],
     code: expressMiddlewaresAppCode,
     children: [
       {
@@ -188,6 +221,10 @@ export const mongooseModelsWorkflow: WorkflowTree = [
     language: 'typescript',
     explanation:
       "mongoose.connect() opens a persistent connection to MongoDB. The connection string format is mongodb://host:port/databaseName — Mongoose creates the database automatically if it doesn't exist. Exporting a connectDB helper keeps the connection logic out of the model files.",
+    keyLines: [
+      { line: 4, note: "process.env.MONGO_URI ?? 'mongodb://localhost:27017/blog' — reads from env var in production, falls back to local MongoDB in dev. Never hardcode connection strings." },
+      { line: 7, note: 'await mongoose.connect() opens the connection pool. All subsequent queries reuse this connection — call connect() once at startup, not before every query.' },
+    ],
     code: mongooseConnectCode,
     children: [
       {
@@ -198,6 +235,11 @@ export const mongooseModelsWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           "new Schema() defines the shape and validation rules for documents in the collection. model('User', userSchema) compiles it into a Model class — Mongoose automatically uses the lowercase, pluralized collection name 'users'. timestamps: true adds createdAt and updatedAt fields automatically.",
+        keyLines: [
+          { line: 7, note: "unique: true creates a MongoDB unique index on email. Duplicates are rejected at the DB level — faster and more reliable than checking in application code first." },
+          { line: 9, note: '{ timestamps: true } — Mongoose automatically adds createdAt and updatedAt fields. No need to define them in the schema or set them manually.' },
+          { line: 12, note: "model('User', userSchema) — Mongoose lowercases and pluralizes: 'User' → 'users' collection. The string 'User' must match any ref: 'User' in other schemas." },
+        ],
         code: mongooseUserModelCode,
       },
       {
@@ -241,6 +283,12 @@ export const mongodbCrudCliWorkflow: WorkflowTree = [
     language: 'typescript',
     explanation:
       "Commander.js builds structured CLIs: program.name() sets the binary name, .description() documents it, and .command() registers each sub-command. .option() adds flags; .argument() adds positional args. The .action() callback runs when that command is invoked — it receives resolved arguments and options, not raw strings from process.argv.",
+    keyLines: [
+      { line: 20, note: ".option('-d, --done', ...) — short (-d) and long (--done) flag syntax. Commander parses --done from argv into opts.done: true automatically." },
+      { line: 23, note: 'Task.create({ title, done: opts.done }) — Mongoose .create() inserts the document and returns the full saved doc with its generated _id.' },
+      { line: 33, note: "Task.find().sort({ createdAt: -1 }) — sort newest-first using the createdAt timestamp added by { timestamps: true } in the schema." },
+      { line: 47, note: "findByIdAndUpdate(id, { done: true }, { new: true }) — { new: true } returns the updated document. Without it Mongoose returns the original pre-update doc." },
+    ],
     code: mongodbCrudCliCode,
     children: [
       {
@@ -251,6 +299,11 @@ export const mongodbCrudCliWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           "A minimal Mongoose schema for the CLI — title is required, done defaults to false. timestamps: true means every document automatically gets createdAt and updatedAt, which the list command uses to sort newest-first.",
+        keyLines: [
+          { line: 7, note: "default: false — Mongoose field default. Task.create({ title }) sets done=false automatically; no need to pass it explicitly." },
+          { line: 9, note: '{ timestamps: true } — adds createdAt/updatedAt. The CLI list command sorts by createdAt: -1 to show newest tasks first.' },
+          { line: 12, note: "model('Task', taskSchema) — creates a 'tasks' collection. The exported Task class is the interface for all CRUD operations in cli.ts." },
+        ],
         code: mongodbCrudTaskModelCode,
       },
     ],
@@ -266,6 +319,10 @@ export const blogApiWorkflow: WorkflowTree = [
     language: 'typescript',
     explanation:
       "The entry point wires everything together: parse JSON bodies, mount two routers at /users and /posts, and connect to MongoDB before listening. connectDB is awaited — no route will fire before the database is ready.",
+    keyLines: [
+      { line: 15, note: 'await mongoose.connect() before app.listen() — the server only starts accepting requests after the DB connection is established. Never listen before connecting.' },
+      { line: 20, note: 'main().catch(console.error) — top-level async error handling. Without .catch(), a failed DB connection would reject silently and the process would hang.' },
+    ],
     code: blogApiAppCode,
     children: [
       {
@@ -276,6 +333,10 @@ export const blogApiWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           "User schema with name and email. unique: true creates a MongoDB index that rejects duplicate emails at the database level — faster and more reliable than checking in application code first.",
+        keyLines: [
+          { line: 5, note: "unique: true — MongoDB enforces uniqueness at the index level. A duplicate email causes a DB error before any application code runs." },
+          { line: 9, note: "model('User', userSchema) — the string 'User' must exactly match ref: 'User' in Post.ts. That's how populate() knows which collection to join against." },
+        ],
         code: blogApiUserModelCode,
       },
       {
@@ -286,6 +347,10 @@ export const blogApiWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           "author stores an ObjectId reference to the User collection. The ref: 'User' value must match the first argument passed to model() in User.ts exactly — that's how populate() knows which collection to join against.",
+        keyLines: [
+          { line: 8, note: "type: Types.ObjectId, ref: 'User' — stores only the User's _id in MongoDB. ref: 'User' tells Mongoose which model to use when .populate('author') is called." },
+          { line: 13, note: "model('Post', postSchema) — creates a 'posts' collection. Posts and Users are stored separately; populate() joins them at query time." },
+        ],
         code: blogApiPostModelCode,
       },
       {
@@ -296,6 +361,11 @@ export const blogApiWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           "Standard CRUD for users: create one, list all, get one by id, update by id, delete by id. findByIdAndUpdate with { new: true } returns the updated document instead of the old one.",
+        keyLines: [
+          { line: 8, note: 'User.create(req.body) — creates directly from the request body. Required fields are enforced by Mongoose schema; no Zod validation yet at this stage.' },
+          { line: 24, note: "findByIdAndUpdate(id, req.body, { new: true }) — { new: true } returns the updated document. Without it Mongoose returns the original pre-update doc." },
+          { line: 31, note: 'res.status(204).send() — 204 No Content is the standard response for a successful DELETE. No body, no JSON, just the status code.' },
+        ],
         code: blogApiUsersRouterCode,
       },
       {
@@ -306,6 +376,10 @@ export const blogApiWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           "GET /posts populates the author field — the client receives { title, content, author: { name, email } } instead of just the raw ObjectId. POST /posts expects { title, content, author: '<userId>' } in the body; Mongoose stores it as an ObjectId automatically.",
+        keyLines: [
+          { line: 13, note: ".populate('author', 'name email') — replaces the stored ObjectId with the User document. The second argument selects which User fields to include in the response." },
+          { line: 18, note: ".findById().populate() — chaining populate() on a single-document query. The returned post has author: { name, email } instead of just an ObjectId." },
+        ],
         code: blogApiPostsRouterCode,
       },
     ],
@@ -351,6 +425,10 @@ export const zodDtoWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           "validateBodyZod(postSchema) runs before the route handler. If validation fails, the handler never executes — Express skips straight to the error response. If it passes, req.body inside the handler is already fully typed and validated.",
+        keyLines: [
+          { line: 10, note: 'validateBodyZod(postSchema) as middleware — the factory returns a middleware function. If validation fails, the route handler never runs.' },
+          { line: 11, note: "req.body as PostDTO — safe to cast here because the middleware already validated and replaced req.body with parsed, typed data." },
+        ],
         code: zodAppCode,
       },
     ],
@@ -366,6 +444,11 @@ export const fileUploadWorkflow: WorkflowTree = [
     language: 'typescript',
     explanation:
       "multer-storage-cloudinary connects Multer (the multipart/form-data parser) to Cloudinary (the image CDN). CloudinaryStorage is configured with the Cloudinary SDK instance and a params object — folder sets the destination folder, format overrides the output extension. multer({ storage }) produces the upload middleware; .single('image') expects a field named 'image' in the form data.",
+    keyLines: [
+      { line: 6, note: 'cloudinary.config() reads credentials from environment variables. Never hardcode API keys — they would be exposed in version control.' },
+      { line: 12, note: 'new CloudinaryStorage() — Multer storage adapter that uploads files directly to Cloudinary instead of saving them to the local filesystem.' },
+      { line: 20, note: "export const upload = multer({ storage }) — the middleware imported by app.ts. Call .single('image') or .array('images') at the route level." },
+    ],
     code: fileUploadCloudinaryCode,
     children: [
       {
@@ -376,6 +459,11 @@ export const fileUploadWorkflow: WorkflowTree = [
         language: 'typescript',
         explanation:
           "upload.single('image') is a middleware that parses the multipart/form-data request, uploads the file to Cloudinary, and attaches the result to req.file. The route handler only runs after the upload is complete — req.file.path is the Cloudinary CDN URL, and req.file.filename is the public ID for future transformations or deletions.",
+        keyLines: [
+          { line: 8, note: "upload.single('image') — Multer middleware that processes one file from the 'image' field. The upload to Cloudinary finishes before the route handler runs." },
+          { line: 9, note: 'if (!req.file) — req.file is undefined if no file was included. Always check before accessing its properties.' },
+          { line: 13, note: "req.file.path — despite the name, this is the Cloudinary CDN URL, not a local filesystem path. multer-storage-cloudinary sets it after the upload." },
+        ],
         code: fileUploadAppCode,
       },
     ],
