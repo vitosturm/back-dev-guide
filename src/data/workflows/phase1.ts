@@ -29,6 +29,7 @@ import { code as blogApiPostsRouterCode } from './code/phase1/blog-api--posts-ro
 import { code as zodValidateMiddlewareCode } from './code/phase1/zod-dto--validate-middleware'
 import { code as zodPostSchemaCode } from './code/phase1/zod-dto--post-schema'
 import { code as zodAppCode } from './code/phase1/zod-dto--app'
+import { code as zodUserSchemaCode } from './code/phase1/zod-dto--user-schema'
 import { code as fileUploadCloudinaryCode } from './code/phase1/file-upload--cloudinary-config'
 import { code as fileUploadAppCode } from './code/phase1/file-upload--app'
 import { code as blogRecapAppCode } from './code/phase1/blog-recap--app'
@@ -428,6 +429,21 @@ export const zodDtoWorkflow: WorkflowTree = [
           { line: 7, note: 'z.string().length(24) validates that the author field is exactly 24 characters — the exact length of a MongoDB ObjectId string — before it ever reaches Mongoose.' },
         ],
         code: zodPostSchemaCode,
+      },
+      {
+        id: 'user-schema',
+        kind: 'file',
+        filePath: 'src/schemas/userSchema.ts',
+        icon: 'typescript',
+        language: 'typescript',
+        explanation:
+          "A second Zod schema demonstrating two Zod v4 syntax variants: z.string({ error: '...' }) sets the error message at the type level (fires when the field is missing or the wrong type), while .min(2, { message: '...' }) sets a refinement-level message (fires only after the type check passes). z.email() is a Zod v4 shorthand that combines z.string() + .email() in one call.",
+        keyLines: [
+          { line: 6, note: "z.string({ error: '...' }) — a Zod v4 syntax. This error fires when the field is absent or not a string. It runs before .min() — type check precedes refinement." },
+          { line: 12, note: "z.email() — Zod v4 shorthand for z.string().email(). Returns a descriptive error message automatically; the { message } option overrides it." },
+          { line: 14, note: ".strict() — rejects any field not declared in the object. Prevents accidental extra fields (e.g. _id from a client copy-paste) from reaching the controller." },
+        ],
+        code: zodUserSchemaCode,
       },
       {
         id: 'app',
