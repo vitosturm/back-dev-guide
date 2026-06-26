@@ -646,11 +646,12 @@ export const blogRecapWorkflow: WorkflowTree = [
             explanation:
               "The controller combines all Phase 1 patterns: Mongoose CRUD, optional Cloudinary file handling, and structured error throwing. The key pattern is throw new Error('...', { cause: { status: 404 } }) — the error handler in app.ts reads cause.status to set the HTTP response code, keeping error formatting out of every controller.",
             keyLines: [
-              { line: 23, note: "throw new Error('Post not found', { cause: { status: 404 } }) — the Error cause option (ES2022) carries arbitrary metadata. The error handler extracts cause.status to set res.status()." },
-              { line: 30, note: 'req.file is set by upload.single() if a file was included; undefined otherwise. The optional chaining image?.path safely skips undefined — image_url stays unset for text-only posts.' },
-              { line: 31, note: 'image?.filename is the Cloudinary public_id. Store it now — you need it to call cloudinary.uploader.destroy() on future update or delete.' },
-              { line: 43, note: "cloudinary.uploader.destroy(post.image_public_id) deletes the old image from Cloudinary before saving the new one. Without this, replaced images accumulate and are never cleaned up." },
-              { line: 57, note: 'post.save() re-runs Mongoose validators and hooks on the modified document. findByIdAndUpdate() skips validators by default — use save() when you need them to run.' },
+              { line: 10, note: 'BlogPost.find() returns an empty array [] when there are no documents — NOT null, NOT an error. Handle it with posts.length === 0 and return a message, not a thrown error.' },
+              { line: 23, note: "findById() returns null when no document matches — null IS an error worth throwing. This is the key distinction: find() returns [], findById() returns null. Two different things." },
+              { line: 30, note: 'req.file is set by upload.single() if a file was uploaded; undefined otherwise. image?.path skips undefined with optional chaining — image_url stays absent for text-only posts.' },
+              { line: 31, note: 'image?.filename is the Cloudinary public_id. Store it now — you need it later to call cloudinary.uploader.destroy() on update or delete.' },
+              { line: 43, note: "cloudinary.uploader.destroy(post.image_public_id) deletes the old image before saving the new one. Without this, replaced images accumulate in Cloudinary and are never cleaned up." },
+              { line: 57, note: 'post.save() re-runs Mongoose validators on the modified document. findByIdAndUpdate() skips validators by default — use save() when you need validation to run on updates.' },
             ],
             code: blogRecapControllerCode,
           },
